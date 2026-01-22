@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calcolo Combinatorio - Indice Risorse</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+            animation: fadeInDown 1s;
+        }
+        
+        .header h1 {
+            font-size: 3.5em;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+        }
+        
+        .header .subtitle {
+            font-size: 1.4em;
+            opacity: 0.95;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+        
+        .header .description {
+            font-size: 1.1em;
+            opacity: 0.85;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .resources-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .resource-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.6s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .resource-card:nth-child(1) { animation-delay: 0.1s; }
+        .resource-card:nth-child(2) { animation-delay: 0.2s; }
+        .resource-card:nth-child(3) { animation-delay: 0.3s; }
+        .resource-card:nth-child(4) { animation-delay: 0.4s; }
+        .resource-card:nth-child(5) { animation-delay: 0.5s; }
+        .resource-card:nth-child(6) { animation-delay: 0.6s; }
+        .resource-card:nth-child(7) { animation-delay: 0.7s; }
+        
+        .resource-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .resource-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+        
+        .resource-number {
+            display: inline-block;
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 45px;
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.4);
+        }
+        
+        .resource-icon {
+            font-size: 3.5em;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .resource-title {
+            font-size: 1.5em;
+            color: #2d3436;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .resource-description {
+            color: #636e72;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            font-size: 1em;
+        }
+        
+        .resource-type {
+            display: inline-block;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .type-html {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .type-video {
+            background: #fce4ec;
+            color: #c2185b;
+        }
+        
+        .type-pdf {
+            background: #fff3e0;
+            color: #e65100;
+        }
+        
+        .resource-link {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .resource-link:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+        
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 60px;
+            padding: 30px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            animation: fadeIn 1.5s;
+        }
+        
+        .footer h3 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+        
+        .footer p {
+            font-size: 1.1em;
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            display: block;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.85;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5em;
+            }
+            
+            .header .subtitle {
+                font-size: 1.2em;
+            }
+            
+            .resources-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .stats {
+                gap: 20px;
+            }
+            
+            .stat-number {
+                font-size: 2em;
+            }
+        }
+        
+        /* Animazione per il numero della risorsa */
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+        
+        .resource-card:hover .resource-number {
+            animation: pulse 0.6s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Calcolo Combinatorio 📊</h1>
+            <p class="subtitle">Risorse Didattiche Interattive</p>
+            <p class="description">
+                Raccolta completa di materiali per lo studio e l'apprendimento del calcolo combinatorio. 
+                Esplora lezioni, video, esercizi e flashcard interattive.
+            </p>
+        </div>
+        
+        <div class="resources-grid">
+            <!-- Risorsa 1 -->
+            <div class="resource-card">
+                <div class="resource-number">1</div>
+                <span class="resource-icon">📚</span>
+                <span class="resource-type type-html">HTML Interattivo</span>
+                <h2 class="resource-title">Introduzione al Combinatorio</h2>
+                <p class="resource-description">
+                    Pagina introduttiva ai concetti fondamentali del calcolo combinatorio. 
+                    Ideale per iniziare il percorso di apprendimento.
+                </p>
+				<a href="Combinatorio_intro.html" class="resource-link" target="_blank">Apri Risorsa →</a>
+            </div>
+            
+            <!-- Risorsa 2 -->
+            <div class="resource-card">
+                <div class="resource-number">2</div>
+                <span class="resource-icon">🎬</span>
+                <span class="resource-type type-video">Video</span>
+                <h2 class="resource-title">La Matematica della Scelta</h2>
+                <p class="resource-description">
+                    Video didattico che esplora i concetti del calcolo combinatorio 
+                    attraverso esempi pratici e spiegazioni visuali.
+                </p>
+                <a href="La_Matematica_della_Scelta.mp4" class="resource-link" target="_blank">Guarda Video →</a>
+            </div>
+            
+            <!-- Risorsa 3 -->
+            <div class="resource-card">
+                <div class="resource-number">3</div>
+                <span class="resource-icon">📄</span>
+                <span class="resource-type type-pdf">PDF</span>
+                <h2 class="resource-title">L'arte di contare l'impossibile</h2>
+                <p class="resource-description">
+                    Documento PDF completo sull'arte del conteggio combinatorio. 
+                    Teoria, esempi e approfondimenti in formato stampabile.
+                </p>
+                <a href="Navigating_Possibility_The_Art_of_Counting.pdf" class="resource-link" target="_blank">Scarica PDF →</a>
+            </div>
+            
+            <!-- Risorsa 4 -->
+            <div class="resource-card">
+                <div class="resource-number">4</div>
+                <span class="resource-icon">🤖</span>
+                <span class="resource-type type-html">HTML Interattivo</span>
+                <h2 class="resource-title">Calcolo Combinatorio GPT</h2>
+                <p class="resource-description">
+                    Lezione interattiva generata con ChatGPT. Include esercizi, 
+                    spiegazioni dettagliate e esempi pratici.
+                </p>
+                <a href="Calcolo_combinatorio_GPT.html" class="resource-link" target="_blank">Apri Lezione →</a>
+            </div>
+            
+            <!-- Risorsa 5 -->
+            <div class="resource-card">
+                <div class="resource-number">5</div>
+                <span class="resource-icon">🧠</span>
+                <span class="resource-type type-html">HTML Interattivo</span>
+                <h2 class="resource-title">Calcolo Combinatorio Claude</h2>
+                <p class="resource-description">
+                    Lezione interattiva generata con Claude AI. Approccio alternativo 
+                    allo studio del calcolo combinatorio con focus sulla comprensione.
+                </p>
+                <a href="Calcolo_combinatorio_claude.html" class="resource-link" target="_blank">Apri Lezione →</a>
+            </div>
+            
+            <!-- Risorsa 6 -->
+            <div class="resource-card">
+                <div class="resource-number">6</div>
+                <span class="resource-icon">🎴</span>
+                <span class="resource-type type-html">HTML Interattivo</span>
+                <h2 class="resource-title">Flashcards GPT</h2>
+                <p class="resource-description">
+                    Sistema di flashcard interattive per memorizzare formule e concetti. 
+                    Perfetto per il ripasso prima delle verifiche.
+                </p>
+                <a href="Flashcards_GPT.html" class="resource-link" target="_blank">Inizia Ripasso →</a>
+            </div>
+            
+            <!-- Risorsa 7 -->
+            <div class="resource-card">
+                <div class="resource-number">7</div>
+                <span class="resource-icon">🃏</span>
+                <span class="resource-type type-html">HTML Interattivo</span>
+                <h2 class="resource-title">Flashcard Claude</h2>
+                <p class="resource-description">
+                    Collezione alternativa di flashcard con grafica accattivante. 
+                    Include tutte le formule e definizioni principali.
+                </p>
+                <a href="Flashcard_claude.html" class="resource-link" target="_blank">Inizia Ripasso →</a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <h3>📈 Statistiche Repository</h3>
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-number">7</span>
+                    <span class="stat-label">Risorse</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">4</span>
+                    <span class="stat-label">Formati</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">100%</span>
+                    <span class="stat-label">Interattivo</span>
+                </div>
+            </div>
+            <p style="margin-top: 30px;">
+                💡 <strong>Suggerimento:</strong> Inizia con l'introduzione, guarda il video, 
+                poi approfondisci con le lezioni interattive e consolida con le flashcard!
+            </p>
+            <p style="margin-top: 15px; font-size: 0.95em;">
+                🎓 Materiale didattico per Istituto Tecnico - Classe 5ª
+            </p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,1550 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calcolo Combinatorio: Scopri il Potere dei Numeri!</title>
+    
+    <!-- Configurazione MathJax -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$']],
+                displayMath: [['$$', '$$']]
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        
+        .slide {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 50px;
+            position: relative;
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .slide-content {
+            max-width: 1200px;
+            z-index: 2;
+            position: relative;
+        }
+        
+        /* Slide 1 - Intro drammatica */
+        #slide1 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            text-align: center;
+        }
+        
+        #slide1 h1 {
+            font-size: 4em;
+            margin-bottom: 30px;
+            animation: fadeInDown 1s;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+        }
+        
+        #slide1 .subtitle {
+            font-size: 2em;
+            animation: fadeInUp 1.5s;
+            margin-top: 20px;
+        }
+        
+        /* Slide 2 - Password */
+        #slide2 {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        /* Slide 3 - Lotterie */
+        #slide3 {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        /* Slide 4 - Netflix */
+        #slide4 {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+        
+        /* Slide 5 - DNA */
+        #slide5 {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+        
+        /* Slide 6 - Spotify */
+        #slide6 {
+            background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+        }
+        
+        /* Slide 7 - Sicurezza */
+        #slide7 {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #333;
+        }
+        
+        /* Slide 8 - Finale */
+        #slide8 {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            color: #333;
+        }
+        
+        .big-number {
+            font-size: 6em;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 4px 4px 8px rgba(0,0,0,0.7);
+            margin: 30px 0;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .question-box {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            margin: 30px 0;
+            font-size: 1.8em;
+            border: 3px solid rgba(255,255,255,0.3);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        .reveal-answer {
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            border: none;
+            padding: 20px 40px;
+            font-size: 1.3em;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+        
+        .reveal-answer:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+        
+        .answer {
+            display: none;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 30px;
+            font-size: 1.5em;
+            border: 3px solid #ffd700;
+            animation: fadeInUp 0.5s;
+        }
+        
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+            display: flex;
+            gap: 15px;
+        }
+        
+        .nav-button {
+            background: rgba(255,255,255,0.3);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.5);
+            color: white;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .nav-button:hover {
+            background: rgba(255,255,255,0.5);
+            transform: scale(1.05);
+        }
+        
+        .slide-indicator {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+        
+        .dot {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.5);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .dot.active {
+            background: #ffd700;
+            transform: scale(1.3);
+        }
+        
+        .emoji {
+            font-size: 5em;
+            margin: 20px;
+            display: inline-block;
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .highlight {
+            background: linear-gradient(120deg, #ffd700 0%, #ff6b6b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: bold;
+        }
+        
+        .fact-box {
+            background: rgba(0,0,0,0.3);
+            border-left: 5px solid #ffd700;
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 10px;
+            font-size: 1.3em;
+        }
+        
+        .comparison {
+            display: flex;
+            justify-content: space-around;
+            margin: 40px 0;
+            flex-wrap: wrap;
+        }
+        
+        .comparison-item {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 10px;
+            flex: 1;
+            min-width: 250px;
+            text-align: center;
+        }
+        
+        .interactive-demo {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 20px;
+            margin: 30px 0;
+        }
+        
+        .code-display {
+            font-family: 'Courier New', monospace;
+            font-size: 2.5em;
+            letter-spacing: 0.2em;
+            background: rgba(0,0,0,0.5);
+            padding: 20px;
+            border-radius: 10px;
+            display: inline-block;
+            margin: 20px 0;
+        }
+        
+        @media (max-width: 768px) {
+            #slide1 h1 {
+                font-size: 2.5em;
+            }
+            
+            .big-number {
+                font-size: 3em;
+            }
+            
+            .question-box {
+                font-size: 1.2em;
+                padding: 20px;
+            }
+            
+            .slide {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SLIDE 1: APERTURA DRAMMATICA -->
+    <div class="slide" id="slide1">
+        <div class="slide-content">
+            <h1>🎲 E SE TI DICESSI CHE...</h1>
+            <div class="subtitle">
+                ...la matematica può prevedere le tue possibilità di vincere alla lotteria?
+            </div>
+            <div class="emoji">🤔</div>
+            <div class="subtitle">
+                ...sa esattamente quante password diverse esistono?
+            </div>
+            <div class="emoji">🔐</div>
+            <div class="subtitle">
+                ...può calcolare le probabilità che il tuo DNA sia unico?
+            </div>
+            <div class="emoji">🧬</div>
+        </div>
+    </div>
+
+    <!-- SLIDE 2: LA TUA PASSWORD È SICURA? -->
+    <div class="slide" id="slide2">
+        <div class="slide-content">
+            <h1>🔒 LA TUA PASSWORD È DAVVERO SICURA?</h1>
+            
+            <div class="question-box">
+                <p>📱 Pensi che la tua password sia impossibile da indovinare?</p>
+                <p style="margin-top: 20px;">Vediamo...</p>
+            </div>
+            
+            <div class="interactive-demo">
+                <h3 style="font-size: 2em; margin-bottom: 20px;">Password di 4 cifre (come il PIN del telefono)</h3>
+                <div class="code-display">🔢 _ _ _ _</div>
+                
+                <button class="reveal-answer" onclick="revealAnswer('answer1')">
+                    💭 Quante combinazioni possibili?
+                </button>
+                
+                <div class="answer" id="answer1">
+                    <h3>Risposta: 10.000 combinazioni!</h3>
+                    <p style="margin-top: 20px; font-size: 1.2em;">
+                        Per ogni posizione hai 10 cifre (0-9):<br>
+                        $$10 \times 10 \times 10 \times 10 = 10^4 = 10000$$
+                    </p>
+                    
+                    <div class="fact-box" style="margin-top: 25px;">
+                        <strong>⚠️ ATTENZIONE:</strong> Un computer può provare tutte le 10.000 combinazioni in pochi secondi! 
+                        <br><br>
+                        ⏱️ Tempo stimato: <strong>meno di 10 secondi</strong>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="interactive-demo" style="margin-top: 40px;">
+                <h3 style="font-size: 2em; margin-bottom: 20px;">Password di 8 caratteri (lettere + numeri)</h3>
+                <div class="code-display">🔠 _ _ _ _ _ _ _ _</div>
+                <p style="margin-top: 15px; font-size: 1.3em;">26 lettere minuscole + 26 maiuscole + 10 cifre = 62 possibilità per carattere</p>
+                
+                <button class="reveal-answer" onclick="revealAnswer('answer2')">
+                    🤯 Quante combinazioni ora?
+                </button>
+                
+                <div class="answer" id="answer2">
+                    <div class="big-number">218.340.105.584.896</div>
+                    <h3>Duecentodiciotto MILIARDI di combinazioni!</h3>
+                    <p style="margin-top: 20px; font-size: 1.2em;">
+                        $$62^8 = 218.340.105.584.896$$
+                    </p>
+                    
+                    <div class="fact-box" style="margin-top: 25px;">
+                        <strong>🛡️ MOLTO PIÙ SICURO!</strong>
+                        <br><br>
+                        Anche provando 1 miliardo di combinazioni al secondo, ci vorrebbero circa <strong>2,5 giorni</strong> per provarle tutte!
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 3: LOTTERIE E SOGNI -->
+    <div class="slide" id="slide3">
+        <div class="slide-content">
+            <h1>💰 IL SOGNO DEL SUPERENALOTTO</h1>
+            
+            <div class="question-box">
+                <div class="emoji">🎰</div>
+                <p style="font-size: 1.5em;">Hai mai sognato di vincere al SuperEnalotto?</p>
+                <p style="margin-top: 20px;">Pensi sia facile fare <span class="highlight">6</span> su <span class="highlight">90</span>?</p>
+            </div>
+            
+            <button class="reveal-answer" onclick="revealAnswer('answer3')">
+                🎯 Scopri le tue VERE probabilità!
+            </button>
+            
+            <div class="answer" id="answer3">
+                <h3 style="font-size: 2em; margin-bottom: 20px;">Quante sestine diverse esistono?</h3>
+                
+                <div class="big-number">622.614.630</div>
+                
+                <h3>Oltre 622 MILIONI di combinazioni diverse!</h3>
+                
+                <p style="margin-top: 30px; font-size: 1.3em;">
+                    Formula: $$C_{90,6} = \binom{90}{6} = \frac{90!}{6! \cdot 84!} = 622.614.630$$
+                </p>
+                
+                <div class="comparison">
+                    <div class="comparison-item">
+                        <h4 style="font-size: 1.8em; margin-bottom: 15px;">📊 Probabilità di vincere</h4>
+                        <p style="font-size: 2em; color: #ffd700;">1 su 622.614.630</p>
+                        <p style="margin-top: 15px;">= 0,00000016%</p>
+                    </div>
+                    
+                    <div class="comparison-item">
+                        <h4 style="font-size: 1.8em; margin-bottom: 15px;">⚡ Per confronto</h4>
+                        <p style="font-size: 1.3em; line-height: 1.8;">
+                            Probabilità di essere colpiti da un fulmine nella vita:<br>
+                            <strong style="color: #ffd700;">1 su 15.300</strong><br><br>
+                            Sei <strong>40.000 volte più probabile</strong> di essere colpito da un fulmine che vincere al SuperEnalotto!
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="fact-box">
+                    <strong>🎰 CURIOSITÀ:</strong> Se giocassi una combinazione diversa ogni settimana, impiegheresti circa <strong>12 MILIONI di anni</strong> per giocare tutte le possibili sestine!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 4: NETFLIX E STREAMING -->
+    <div class="slide" id="slide4">
+        <div class="slide-content">
+            <h1>🎬 NETFLIX: L'ARTE DELLA SCELTA</h1>
+            
+            <div class="question-box">
+                <p>Hai una serata libera e vuoi vedere 3 film dalla tua lista di 20 film salvati...</p>
+                <div class="emoji">🍿</div>
+                <p style="margin-top: 20px;">In quanti modi diversi puoi scegliere cosa guardare?</p>
+            </div>
+            
+            <button class="reveal-answer" onclick="revealAnswer('answer4')">
+                🎭 Calcola le tue opzioni!
+            </button>
+            
+            <div class="answer" id="answer4">
+                <h3>Dipende da cosa ti interessa!</h3>
+                
+                <div class="comparison">
+                    <div class="comparison-item">
+                        <h4 style="font-size: 1.5em; color: #e50914;">OPZIONE A: L'ordine conta</h4>
+                        <p style="margin-top: 15px; font-size: 1.2em;">
+                            (Film 1, poi Film 2, poi Film 3)
+                        </p>
+                        <p style="margin-top: 15px; font-size: 1.1em;">
+                            Usi le <strong>disposizioni</strong>:
+                        </p>
+                        <div style="font-size: 2em; margin: 20px 0; color: #ffd700;">
+                            $$D_{20,3} = 20 \cdot 19 \cdot 18 = 6840$$
+                        </div>
+                        <p><strong>6.840 sequenze diverse!</strong></p>
+                    </div>
+                    
+                    <div class="comparison-item">
+                        <h4 style="font-size: 1.5em; color: #e50914;">OPZIONE B: Solo quali film</h4>
+                        <p style="margin-top: 15px; font-size: 1.2em;">
+                            (Non importa l'ordine)
+                        </p>
+                        <p style="margin-top: 15px; font-size: 1.1em;">
+                            Usi le <strong>combinazioni</strong>:
+                        </p>
+                        <div style="font-size: 2em; margin: 20px 0; color: #ffd700;">
+                            $$C_{20,3} = \binom{20}{3} = 1140$$
+                        </div>
+                        <p><strong>1.140 terne diverse!</strong></p>
+                    </div>
+                </div>
+                
+                <div class="fact-box">
+                    <strong>🎯 NETFLIX lo sa!</strong> Gli algoritmi di raccomandazione usano il calcolo combinatorio per suggerirti contenuti in base alle tue preferenze. Con milioni di utenti e migliaia di contenuti, le combinazioni sono astronomiche!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 5: DNA E UNICITÀ -->
+    <div class="slide" id="slide5">
+        <div class="slide-content">
+            <h1>🧬 SEI DAVVERO UNICO?</h1>
+            
+            <div class="question-box">
+                <div class="emoji">👤</div>
+                <p>Il DNA umano è composto da circa <strong>3 miliardi</strong> di "lettere" (nucleotidi)</p>
+                <p style="margin-top: 20px;">Esistono solo 4 tipi di nucleotidi: A, T, C, G</p>
+                <p style="margin-top: 20px; font-size: 1.3em;">
+                    Quante combinazioni diverse di DNA sono possibili?
+                </p>
+            </div>
+            
+            <button class="reveal-answer" onclick="revealAnswer('answer5')">
+                🔬 Scopri il numero incredibile!
+            </button>
+            
+            <div class="answer" id="answer5">
+                <h3 style="font-size: 2em;">Preparati...</h3>
+                
+                <p style="font-size: 1.5em; margin: 30px 0;">
+                    Con 3 miliardi di posizioni e 4 possibilità per ogni posizione:
+                </p>
+                
+                <div class="big-number" style="font-size: 3em;">
+                    $$4^{3.000.000.000}$$
+                </div>
+                
+                <h3>Questo numero è così grande che...</h3>
+                
+                <div class="fact-box">
+                    <p style="font-size: 1.3em; line-height: 1.8;">
+                        🌍 Supera il numero di <strong>atomi nell'universo osservabile</strong> (circa $10^{80}$)<br><br>
+                        👥 È <strong>impossibilmente più grande</strong> del numero di esseri umani mai esistiti<br><br>
+                        ⭐ Ogni essere umano è letteralmente <strong>unico matematicamente</strong>
+                    </p>
+                </div>
+                
+                <p style="margin-top: 30px; font-size: 1.4em;">
+                    <strong>Ecco perché sei speciale: la matematica lo dimostra! 💫</strong>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 6: SPOTIFY E PLAYLIST -->
+    <div class="slide" id="slide6">
+        <div class="slide-content">
+            <h1>🎵 SPOTIFY: PLAYLIST INFINITE</h1>
+            
+            <div class="question-box">
+                <div class="emoji">🎧</div>
+                <p>Hai salvato 50 canzoni nella tua libreria</p>
+                <p style="margin-top: 20px;">Vuoi creare una playlist di 10 canzoni per la palestra</p>
+                <p style="margin-top: 20px; font-size: 1.4em;">
+                    Quante playlist diverse puoi creare?
+                </p>
+            </div>
+            
+            <button class="reveal-answer" onclick="revealAnswer('answer6')">
+                🎼 Calcola le tue playlist!
+            </button>
+            
+            <div class="answer" id="answer6">
+                <h3>Dipende da cosa vuoi!</h3>
+                
+                <div class="comparison">
+                    <div class="comparison-item">
+                        <h4 style="font-size: 1.5em; color: #1DB954;">CASO 1: Ordine specifico</h4>
+                        <p style="margin-top: 15px;">
+                            (Prima canzone per riscaldamento, ultima per defaticamento, ecc.)
+                        </p>
+                        <p style="margin-top: 15px; font-size: 1.1em;">
+                            <strong>Disposizioni semplici:</strong>
+                        </p>
+                        <div style="font-size: 1.5em; margin: 15px 0; color: #ffd700;">
+                            $$D_{50,10} = \frac{50!}{40!}$$
+                        </div>
+                        <div class="big-number" style="font-size: 2em;">
+                            37.276.043.023.296.000
+                        </div>
+                        <p><strong>37 QUADRILIONI di playlist!</strong></p>
+                    </div>
+                    
+                    <div class="comparison-item">
+                        <h4 style="font-size: 1.5em; color: #1DB954;">CASO 2: Solo quali canzoni</h4>
+                        <p style="margin-top: 15px;">
+                            (L'ordine non importa, shuffle mode!)
+                        </p>
+                        <p style="margin-top: 15px; font-size: 1.1em;">
+                            <strong>Combinazioni semplici:</strong>
+                        </p>
+                        <div style="font-size: 1.5em; margin: 15px 0; color: #ffd700;">
+                            $$C_{50,10} = \binom{50}{10}$$
+                        </div>
+                        <div class="big-number" style="font-size: 2em;">
+                            10.272.278.170
+                        </div>
+                        <p><strong>Oltre 10 MILIARDI di playlist!</strong></p>
+                    </div>
+                </div>
+                
+                <div class="fact-box">
+                    <strong>🎯 IMPRESSIONANTE:</strong> Anche ascoltando una playlist diversa ogni giorno, ti servirebbero oltre <strong>28 MILIONI di anni</strong> per ascoltarle tutte (nel caso 2)!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 7: CODICI E SICUREZZA -->
+    <div class="slide" id="slide7">
+        <div class="slide-content">
+            <h1 style="color: #d32f2f;">🚨 SICUREZZA INFORMATICA: LA GUERRA DEI NUMERI</h1>
+            
+            <div class="question-box" style="color: #333;">
+                <p><strong>Scenario reale:</strong></p>
+                <p style="margin-top: 20px; font-size: 1.2em;">
+                    Gli hacker cercano di violare account provando migliaia di password al secondo...
+                </p>
+                <div class="emoji">😈</div>
+            </div>
+            
+            <div class="interactive-demo">
+                <h3 style="font-size: 2em; margin-bottom: 30px; color: #333;">Confronto: Password debole vs forte</h3>
+                
+                <div class="comparison">
+                    <div class="comparison-item" style="background: rgba(244,67,54,0.3);">
+                        <h4 style="font-size: 1.8em; color: #d32f2f;">❌ PASSWORD DEBOLE</h4>
+                        <div class="code-display" style="background: rgba(0,0,0,0.7); color: #fff;">password123</div>
+                        <p style="color: #333; margin-top: 20px; font-size: 1.2em;">
+                            11 caratteri (solo minuscole e numeri)
+                        </p>
+                        <button class="reveal-answer" onclick="revealAnswer('answer7a')" style="background: #d32f2f; color: white;">
+                            Quanto è debole?
+                        </button>
+                        <div class="answer" id="answer7a" style="background: rgba(211,47,47,0.2); border-color: #d32f2f; color: #333;">
+                            <p style="font-size: 1.3em;">
+                                36 possibilità per carattere (26 lettere + 10 cifre)
+                            </p>
+                            <div style="font-size: 1.5em; margin: 15px 0;">
+                                $$36^{11} \approx 1.3 \times 10^{17}$$
+                            </div>
+                            <p style="font-size: 1.2em; margin-top: 20px;">
+                                ⏱️ <strong>Tempo per crackarla:</strong><br>
+                                Con 1 miliardo di tentativi/secondo:<br>
+                                <span style="font-size: 1.5em; color: #d32f2f;"><strong>~4 ANNI</strong></span>
+                            </p>
+                            <p style="margin-top: 15px;">
+                                Ma è troppo comune! Sarebbe scoperta in <strong>pochi minuti</strong> con un dizionario di password comuni!
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="comparison-item" style="background: rgba(76,175,80,0.3);">
+                        <h4 style="font-size: 1.8em; color: #2e7d32;">✅ PASSWORD FORTE</h4>
+                        <div class="code-display" style="background: rgba(0,0,0,0.7); color: #fff;">Tr3$@Kp9#mQ2</div>
+                        <p style="color: #333; margin-top: 20px; font-size: 1.2em;">
+                            12 caratteri (maiuscole, minuscole, numeri, simboli)
+                        </p>
+                        <button class="reveal-answer" onclick="revealAnswer('answer7b')" style="background: #2e7d32; color: white;">
+                            Quanto è forte?
+                        </button>
+                        <div class="answer" id="answer7b" style="background: rgba(46,125,50,0.2); border-color: #2e7d32; color: #333;">
+                            <p style="font-size: 1.3em;">
+                                95 possibilità per carattere (maiuscole + minuscole + cifre + simboli)
+                            </p>
+                            <div style="font-size: 1.3em; margin: 15px 0;">
+                                $$95^{12} \approx 5.4 \times 10^{23}$$
+                            </div>
+                            <p style="font-size: 1.2em; margin-top: 20px;">
+                                ⏱️ <strong>Tempo per crackarla:</strong><br>
+                                Con 1 miliardo di tentativi/secondo:<br>
+                                <span style="font-size: 1.8em; color: #2e7d32;"><strong>17 MILIONI DI ANNI!</strong></span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="fact-box" style="color: #333;">
+                    <strong>💡 LEZIONE:</strong> Aggiungere anche solo <strong>1 carattere</strong> e usare <strong>più tipi</strong> di caratteri moltiplica le combinazioni in modo esponenziale! Questo è il potere del calcolo combinatorio nella sicurezza informatica.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 8: CAMPIONATO DI CALCIO -->
+    <div class="slide" id="slide8" style="background: linear-gradient(135deg, #52c234 0%, #061700 100%);">
+        <div class="slide-content">
+            <h1>⚽ CHAMPIONS LEAGUE: SORTEGGI IMPOSSIBILI</h1>
+            
+            <div class="question-box">
+                <div class="emoji">🏆</div>
+                <p>Fase a gironi della Champions League:</p>
+                <p style="margin-top: 20px;">32 squadre divise in 8 gironi da 4 squadre ciascuno</p>
+                <p style="margin-top: 20px; font-size: 1.4em;">
+                    Quanti sorteggi diversi sono possibili?
+                </p>
+            </div>
+            
+            <button class="reveal-answer" onclick="revealAnswer('answer8')">
+                🎱 Scopri il numero astronomico!
+            </button>
+            
+            <div class="answer" id="answer8">
+                <h3 style="font-size: 2em;">Il calcolo è complesso...</h3>
+                
+                <p style="font-size: 1.3em; margin: 25px 0; line-height: 1.8;">
+                    Dobbiamo dividere 32 squadre in 8 gruppi di 4.<br>
+                    Questo coinvolge <strong>combinazioni multiple</strong>:
+                </p>
+                
+                <div style="background: rgba(0,0,0,0.5); padding: 30px; border-radius: 15px; margin: 30px 0;">
+                    <p style="font-size: 1.2em;">Primo gruppo: scegliere 4 squadre tra 32</p>
+                    $$\binom{32}{4}$$
+                    
+                    <p style="font-size: 1.2em; margin-top: 20px;">Secondo gruppo: scegliere 4 squadre tra le 28 rimanenti</p>
+                    $$\binom{28}{4}$$
+                    
+                    <p style="margin-top: 20px;">E così via...</p>
+                    
+                    <p style="font-size: 1.3em; margin-top: 30px;">
+                        $$\frac{\binom{32}{4} \cdot \binom{28}{4} \cdot \binom{24}{4} \cdot \binom{20}{4} \cdot \binom{16}{4} \cdot \binom{12}{4} \cdot \binom{8}{4} \cdot \binom{4}{4}}{8!}$$
+                    </p>
+                    
+                    <p style="margin-top: 20px; font-size: 0.9em;">(Diviso per $8!$ perché l'ordine dei gironi non conta)</p>
+                </div>
+                
+                <div class="big-number">
+                    ≈ 1,5 × 10²⁷
+                </div>
+                
+                <h3>Oltre UN QUADRILIONE di QUADRILIONI!</h3>
+                
+                <div class="fact-box">
+                    <strong>🤯 PER CAPIRE QUANTO È GRANDE:</strong><br><br>
+                    Se ogni sorteggio richiedesse 1 secondo e avessi iniziato all'inizio dell'universo (13,8 miliardi di anni fa), non avresti ancora finito di provarli tutti!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 9: SOCIAL MEDIA E AMICIZIE -->
+    <div class="slide" id="slide9" style="background: linear-gradient(135deg, #405de6 0%, #5851db 50%, #833ab4 100%);">
+        <div class="slide-content">
+            <h1>📱 SOCIAL NETWORK: LA MATEMATICA DELLE CONNESSIONI</h1>
+            
+            <div class="question-box">
+                <div class="emoji">👥</div>
+                <p>Hai 500 amici su Instagram</p>
+                <p style="margin-top: 20px; font-size: 1.4em;">
+                    Quante possibili conversazioni di gruppo da 5 persone puoi creare?
+                </p>
+            </div>
+            
+            <button class="reveal-answer" onclick="revealAnswer('answer9')">
+                💬 Calcola le tue possibilità!
+            </button>
+            
+            <div class="answer" id="answer9">
+                <h3>L'ordine non conta (i gruppi sono uguali indipendentemente da chi inviti per primo)</h3>
+                
+                <p style="font-size: 1.4em; margin: 30px 0;">
+                    Usiamo le <strong>combinazioni</strong>:
+                </p>
+                
+                <div class="big-number" style="font-size: 3.5em;">
+                    $$C_{500,5} = \binom{500}{5}$$
+                </div>
+                
+                <div class="big-number" style="font-size: 4em;">
+                    255.244.687.600
+                </div>
+                
+                <h3>Oltre 255 MILIARDI di gruppi diversi!</h3>
+                
+                <div class="comparison">
+                    <div class="comparison-item">
+                        <h4 style="font-size: 1.5em;">📊 E con gruppi da 3?</h4>
+                        <div style="font-size: 1.8em; margin: 20px 0; color: #ffd700;">
+                            $$C_{500,3} = 20.708.500$$
+                        </div>
+                        <p>Oltre 20 MILIONI!</p>
+                    </div>
+                    
+                    <div class="comparison-item">
+                        <h4 style="font-size: 1.5em;">📊 E con gruppi da 10?</h4>
+                        <div style="font-size: 1.5em; margin: 20px 0; color: #ffd700;">
+                            $$C_{500,10} \approx 2.46 \times 10^{21}$$
+                        </div>
+                        <p>2 TRILIARDI!</p>
+                    </div>
+                </div>
+                
+                <div class="fact-box">
+                    <strong>🌐 FACEBOOK & INSTAGRAM lo usano:</strong> Gli algoritmi che suggeriscono "persone che potresti conoscere" analizzano miliardi di possibili connessioni usando proprio il calcolo combinatorio!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 10: GENETICA E EREDITÀ -->
+    <div class="slide" id="slide10" style="background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);">
+        <div class="slide-content">
+            <h1>👶 PERCHÉ I FRATELLI SONO DIVERSI?</h1>
+            
+            <div class="question-box">
+                <div class="emoji">👨‍👩‍👧‍👦</div>
+                <p>Ogni essere umano ha 23 coppie di cromosomi</p>
+                <p style="margin-top: 20px;">Quando si forma un figlio, riceve 1 cromosoma casuale da ogni coppia di ciascun genitore</p>
+                <p style="margin-top: 20px; font-size: 1.4em;">
+                    Quante combinazioni genetiche diverse possono avere i tuoi figli?
+                </p>
+            </div>
+            
+            <button class="reveal-answer" onclick="revealAnswer('answer10')">
+                🧬 La risposta ti stupirà!
+            </button>
+            
+            <div class="answer" id="answer10">
+                <h3 style="font-size: 2em;">Calcoliamo...</h3>
+                
+                <div style="background: rgba(0,0,0,0.3); padding: 30px; border-radius: 15px; margin: 30px 0;">
+                    <p style="font-size: 1.4em; line-height: 1.8;">
+                        <strong>Da UN genitore:</strong><br>
+                        23 coppie di cromosomi = 23 scelte binarie (cromosoma A o B)
+                    </p>
+                    <div style="font-size: 2em; margin: 20px 0; color: #ffd700;">
+                        $$2^{23} = 8.388.608$$
+                    </div>
+                    <p style="font-size: 1.3em;">Oltre 8 MILIONI di combinazioni da ogni genitore!</p>
+                </div>
+                
+                <div style="background: rgba(0,0,0,0.3); padding: 30px; border-radius: 15px; margin: 30px 0;">
+                    <p style="font-size: 1.4em; line-height: 1.8;">
+                        <strong>Da ENTRAMBI i genitori:</strong>
+                    </p>
+                    <div style="font-size: 1.8em; margin: 20px 0; color: #ffd700;">
+                        $$2^{23} \times 2^{23} = 2^{46}$$
+                    </div>
+                    
+                    <div class="big-number">
+                        70.368.744.177.664
+                    </div>
+                    
+                    <h3>Oltre 70 MILA MILIARDI di combinazioni!</h3>
+                </div>
+                
+                <div class="fact-box">
+                    <strong>🎯 ECCO PERCHÉ:</strong><br><br>
+                    👫 I fratelli (non gemelli) sono geneticamente diversi!<br><br>
+                    🌍 Ogni persona è praticamente irripetibile!<br><br>
+                    💫 E questo senza considerare le mutazioni casuali che aumentano ancora di più la variabilità!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 11: CARTE E POKER -->
+    <div class="slide" id="slide11" style="background: linear-gradient(135deg, #134e5e 0%, #71b280 100%);">
+        <div class="slide-content">
+            <h1>🃏 POKER: LA MATEMATICA VINCE SEMPRE</h1>
+            
+            <div class="question-box">
+                <div class="emoji">♠️♥️♣️♦️</div>
+                <p>Mazzo di carte standard: 52 carte</p>
+                <p style="margin-top: 20px;">Una mano di poker: 5 carte</p>
+                <p style="margin-top: 20px; font-size: 1.4em;">
+                    Quante mani diverse esistono?
+                </p>
+            </div>
+            
+            <button class="reveal-answer" onclick="revealAnswer('answer11')">
+                🎰 Scopri i numeri del gioco!
+            </button>
+            
+            <div class="answer" id="answer11">
+                <h3>Mani totali possibili:</h3>
+                
+                <div style="font-size: 1.5em; margin: 30px 0;">
+                    $$C_{52,5} = \binom{52}{5} = \frac{52 \cdot 51 \cdot 50 \cdot 49 \cdot 48}{5!}$$
+                </div>
+                
+                <div class="big-number" style="font-size: 4em;">
+                    2.598.960
+                </div>
+                
+                <h3>Quasi 2,6 MILIONI di mani diverse!</h3>
+                
+                <div style="margin-top: 40px;">
+                    <h3 style="font-size: 2em; margin-bottom: 20px;">Ma quante sono le mani vincenti?</h3>
+                    
+                    <div class="comparison">
+                        <div class="comparison-item">
+                            <h4 style="color: #ffd700;">👑 Scala Reale</h4>
+                            <div style="font-size: 2.5em; margin: 15px 0;">4</div>
+                            <p>Probabilità:</p>
+                            <div style="font-size: 1.3em; color: #ffd700;">
+                                $$\frac{4}{2.598.960} \approx 0,00015\%$$
+                            </div>
+                        </div>
+                        
+                        <div class="comparison-item">
+                            <h4 style="color: #ffd700;">🎴 Poker (Four of a Kind)</h4>
+                            <div style="font-size: 2.5em; margin: 15px 0;">624</div>
+                            <p>Probabilità:</p>
+                            <div style="font-size: 1.3em; color: #ffd700;">
+                                $$\frac{624}{2.598.960} \approx 0,024\%$$
+                            </div>
+                        </div>
+                        
+                        <div class="comparison-item">
+                            <h4 style="color: #ffd700;">🏠 Full</h4>
+                            <div style="font-size: 2.5em; margin: 15px 0;">3.744</div>
+                            <p>Probabilità:</p>
+                            <div style="font-size: 1.3em; color: #ffd700;">
+                                $$\frac{3.744}{2.598.960} \approx 0,14\%$$
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="fact-box">
+                    <strong>🎓 I PROFESSIONISTI SANNO:</strong> I giocatori professionisti di poker usano il calcolo combinatorio per calcolare le probabilità di ogni mano e decidere se puntare o ritirarsi. La matematica è la differenza tra un giocatore amatoriale e uno professionista!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 12: GRUPPI WHATSAPP -->
+    <div class="slide" id="slide12" style="background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);">
+        <div class="slide-content">
+            <h1>💬 WHATSAPP: L'ESPLOSIONE DEI GRUPPI</h1>
+            
+            <div class="question-box">
+                <div class="emoji">📲</div>
+                <p>La tua classe ha 25 studenti</p>
+                <p style="margin-top: 20px; font-size: 1.4em;">
+                    Quanti gruppi WhatsApp diversi da 5 persone si potrebbero creare?
+                </p>
+            </div>
+            
+            <button class="reveal-answer" onclick="revealAnswer('answer12')">
+                💭 Fai il calcolo!
+            </button>
+            
+            <div class="answer" id="answer12">
+                <h3>L'ordine non conta in un gruppo!</h3>
+                
+                <p style="font-size: 1.4em; margin: 30px 0;">
+                    Combinazioni di 25 studenti di classe 5:
+                </p>
+                
+                <div style="font-size: 1.8em; margin: 30px 0;">
+                    $$C_{25,5} = \binom{25}{5} = \frac{25!}{5! \cdot 20!}$$
+                </div>
+                
+                <div class="big-number">
+                    53.130
+                </div>
+                
+                <h3>Oltre 53 MILA gruppi diversi possibili!</h3>
+                
+                <div style="margin-top: 40px;">
+                    <h3 style="font-size: 1.8em; margin-bottom: 20px;">E se i gruppi fossero da 3 persone?</h3>
+                    <div style="font-size: 2em; color: #ffd700;">
+                        $$C_{25,3} = \binom{25}{3} = 2.300$$
+                    </div>
+                </div>
+                
+                <div class="fact-box">
+                    <strong>🔥 CURIOSITÀ ESTREMA:</strong><br><br>
+                    Quanti gruppi totali (di qualsiasi dimensione da 1 a 25) si potrebbero creare con 25 persone?<br><br>
+                    <div style="font-size: 1.5em; margin: 15px 0; color: #ffd700;">
+                        $$2^{25} - 1 = 33.554.431$$
+                    </div>
+                    <p style="font-size: 1.2em;">
+                        Oltre 33 MILIONI! (Sottraiamo 1 perché il gruppo vuoto non vale)
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 13: ESAMI E UNIVERSITÀ -->
+    <div class="slide" id="slide13" style="background: linear-gradient(135deg, #f12711 0%, #f5af19 100%);">
+        <div class="slide-content">
+            <h1>📚 TEST A RISPOSTA MULTIPLA</h1>
+            
+            <div class="question-box" style="color: #333;">
+                <div class="emoji">✍️</div>
+                <p>Test d'ammissione all'università:</p>
+                <p style="margin-top: 20px;"><strong>60 domande</strong></p>
+                <p style="margin-top: 15px;"><strong>5 risposte</strong> per ogni domanda</p>
+                <p style="margin-top: 15px;">Solo <strong>1 risposta corretta</strong></p>
+                <p style="margin-top: 30px; font-size: 1.5em;">
+                    Se rispondi a caso, quante combinazioni di risposte ci sono?
+                </p>
+            </div>
+            
+            <button class="reveal-answer" onclick="revealAnswer('answer13')" style="background: #f12711;">
+                🎲 Scopri quanto è difficile indovinare!
+            </button>
+            
+            <div class="answer" id="answer13">
+                <h3 style="font-size: 2em; color: #333;">Ogni domanda ha 5 possibili risposte...</h3>
+                
+                <p style="font-size: 1.5em; margin: 30px 0; color: #333;">
+                    Disposizioni con ripetizione (ogni risposta può ripetersi):
+                </p>
+                
+                <div style="font-size: 2em; margin: 30px 0; color: #333;">
+                    $$D'_{5,60} = 5^{60}$$
+                </div>
+                
+                <div class="big-number" style="font-size: 2.5em; color: #f12711;">
+                    8,67 × 10⁴¹
+                </div>
+                
+                <h3 style="color: #333;">Un numero con 42 cifre!</h3>
+                
+                <div class="comparison">
+                    <div class="comparison-item" style="background: rgba(241,39,17,0.3);">
+                        <h4 style="color: #333; font-size: 1.5em;">😰 Rispondere a caso</h4>
+                        <p style="color: #333; margin-top: 15px; font-size: 1.2em;">
+                            Probabilità di indovinare TUTTE le 60 risposte:
+                        </p>
+                        <div style="font-size: 1.8em; margin: 20px 0; color: #f12711;">
+                            $$\frac{1}{5^{60}} \approx 1,15 \times 10^{-42}$$
+                        </div>
+                        <p style="color: #333; font-size: 1.3em;">
+                            Praticamente <strong>IMPOSSIBILE</strong>!
+                        </p>
+                    </div>
+                    
+                    <div class="comparison-item" style="background: rgba(76,175,80,0.3);">
+                        <h4 style="color: #333; font-size: 1.5em;">📖 Studiare!</h4>
+                        <p style="color: #333; margin-top: 15px; font-size: 1.2em;">
+                            Se conosci la risposta a metà delle domande (30) e indovini le altre 30:
+                        </p>
+                        <div style="font-size: 1.5em; margin: 20px 0; color: #2e7d32;">
+                            $$\frac{1}{5^{30}} \approx 1,07 \times 10^{-21}$$
+                        </div>
+                        <p style="color: #333; font-size: 1.3em;">
+                            Ancora quasi impossibile!<br><br>
+                            <strong>Meglio studiare! 😉</strong>
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="fact-box" style="color: #333;">
+                    <strong>💡 MORALE DELLA STORIA:</strong> La matematica dimostra scientificamente che <strong>non conviene affidarsi alla fortuna</strong>. Le probabilità sono schiaccianti contro chi non studia!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 14: RISTORANTE E MENU -->
+    <div class="slide" id="slide14" style="background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%);">
+        <div class="slide-content">
+            <h1>🍕 IL MENU INFINITO</h1>
+            
+            <div class="question-box" style="color: #333;">
+                <div class="emoji">🍔</div>
+                <p><strong>McDonald's ti sfida:</strong></p>
+                <p style="margin-top: 20px; font-size: 1.3em;">
+                    Crea il tuo hamburger personalizzato!
+                </p>
+                <p style="margin-top: 30px;">
+                    📝 <strong>12 ingredienti</strong> disponibili<br>
+                    (lattuga, pomodoro, cipolla, bacon, formaggio, jalapeños, ...)
+                </p>
+                <p style="margin-top: 20px; font-size: 1.5em;">
+                    Puoi scegliere da 0 a 12 ingredienti.<br>
+                    Quanti hamburger diversi puoi ordinare?
+                </p>
+            </div>
+            
+            <button class="reveal-answer" onclick="revealAnswer('answer14')" style="background: #fc4a1a;">
+                🍔 Scopri il menu segreto!
+            </button>
+            
+            <div class="answer" id="answer14">
+                <h3 style="color: #333; font-size: 2em;">Ragionamento elegante...</h3>
+                
+                <div style="background: rgba(0,0,0,0.2); padding: 30px; border-radius: 15px; margin: 30px 0;">
+                    <p style="color: #333; font-size: 1.4em; line-height: 1.8;">
+                        Per ogni ingrediente hai <strong>2 scelte</strong>:<br>
+                        ✅ Lo metti nell'hamburger<br>
+                        ❌ Non lo metti
+                    </p>
+                    
+                    <p style="color: #333; font-size: 1.3em; margin-top: 25px;">
+                        Con 12 ingredienti:
+                    </p>
+                    
+                    <div style="font-size: 2.5em; margin: 25px 0; color: #fc4a1a;">
+                        $$2^{12} = 4.096$$
+                    </div>
+                    
+                    <p style="color: #333; font-size: 1.2em;">
+                        Ma dobbiamo togliere 1 (l'hamburger vuoto non vale!):
+                    </p>
+                    
+                    <div class="big-number" style="color: #fc4a1a;">
+                        4.095
+                    </div>
+                </div>
+                
+                <h3 style="color: #333; margin-top: 30px;">Oltre 4000 hamburger diversi!</h3>
+                
+                <div class="comparison">
+                    <div class="comparison-item" style="background: rgba(252,74,26,0.3);">
+                        <h4 style="color: #333;">📊 Con 0 ingredienti:</h4>
+                        <div style="font-size: 1.8em; color: #fc4a1a;">$$\binom{12}{0} = 1$$</div>
+                        <p style="color: #333;">(panino vuoto)</p>
+                    </div>
+                    
+                    <div class="comparison-item" style="background: rgba(252,74,26,0.3);">
+                        <h4 style="color: #333;">📊 Con 1 ingrediente:</h4>
+                        <div style="font-size: 1.8em; color: #fc4a1a;">$$\binom{12}{1} = 12$$</div>
+                    </div>
+                    
+                    <div class="comparison-item" style="background: rgba(252,74,26,0.3);">
+                        <h4 style="color: #333;">📊 Con 2 ingredienti:</h4>
+                        <div style="font-size: 1.8em; color: #fc4a1a;">$$\binom{12}{2} = 66$$</div>
+                    </div>
+                </div>
+                
+                <div class="fact-box" style="color: #333;">
+                    <strong>🍟 DOMANDA BONUS:</strong> Se McDonald's aggiungesse solo 3 ingredienti in più (totale 15), quanti hamburger diversi si potrebbero fare?<br><br>
+                    <div style="font-size: 1.5em; color: #fc4a1a; margin-top: 15px;">
+                        $$2^{15} - 1 = 32.767$$
+                    </div>
+                    <p style="margin-top: 15px;">
+                        Quasi <strong>8 volte di più</strong> con soli 3 ingredienti extra! Ecco perché il calcolo combinatorio è potente!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 15: GOOGLE E RICERCHE -->
+    <div class="slide" id="slide15" style="background: linear-gradient(135deg, #4285f4 0%, #ea4335 50%, #fbbc05 75%, #34a853 100%);">
+        <div class="slide-content">
+            <h1>🔍 GOOGLE: ORDINARE L'INFINITO</h1>
+            
+            <div class="question-box">
+                <div class="emoji">🌐</div>
+                <p>Google indicizza oltre <strong>130 MILIARDI</strong> di pagine web</p>
+                <p style="margin-top: 30px; font-size: 1.4em;">
+                    Quando cerchi qualcosa, Google deve decidere in che ordine mostrare i risultati...
+                </p>
+                <p style="margin-top: 30px; font-size: 1.3em;">
+                    Se una ricerca restituisce 10 risultati rilevanti, in quanti modi diversi Google potrebbe ordinarli?
+                </p>
+            </div>
+            
+            <button class="reveal-answer" onclick="revealAnswer('answer15')">
+                🎯 Calcola le permutazioni!
+            </button>
+            
+            <div class="answer" id="answer15">
+                <h3>Ordinare 10 risultati...</h3>
+                
+                <p style="font-size: 1.5em; margin: 30px 0;">
+                    Si tratta di <strong>permutazioni</strong> (tutti e 10 i risultati devono apparire, ma in ordine diverso):
+                </p>
+                
+                <div style="font-size: 2em; margin: 30px 0;">
+                    $$P_{10} = 10!$$
+                </div>
+                
+                <div class="big-number" style="font-size: 4em;">
+                    3.628.800
+                </div>
+                
+                <h3>Oltre 3,6 MILIONI di ordini diversi!</h3>
+                
+                <div class="comparison">
+                    <div class="comparison-item">
+                        <h4 style="font-size: 1.5em;">📄 Con 5 risultati</h4>
+                        <div style="font-size: 2em; margin: 15px 0; color: #ffd700;">
+                            $$5! = 120$$
+                        </div>
+                    </div>
+                    
+                    <div class="comparison-item">
+                        <h4 style="font-size: 1.5em;">📄 Con 15 risultati</h4>
+                        <div style="font-size: 1.5em; margin: 15px 0; color: #ffd700;">
+                            $$15! \approx 1,3 \times 10^{12}$$
+                        </div>
+                        <p>1.300 MILIARDI!</p>
+                    </div>
+                    
+                    <div class="comparison-item">
+                        <h4 style="font-size: 1.5em;">📄 Con 20 risultati</h4>
+                        <div style="font-size: 1.3em; margin: 15px 0; color: #ffd700;">
+                            $$20! \approx 2,4 \times 10^{18}$$
+                        </div>
+                        <p>2,4 TRILIONI!</p>
+                    </div>
+                </div>
+                
+                <div class="fact-box">
+                    <strong>🤖 L'ALGORITMO DI GOOGLE:</strong> Il PageRank e gli altri algoritmi usano il calcolo combinatorio e la teoria delle probabilità per decidere quale sia il miglior ordine dei risultati. Ecco perché Google è così preciso!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 16: TORNEO SPORTIVO -->
+    <div class="slide" id="slide16" style="background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);">
+        <div class="slide-content">
+            <h1>🏆 MONDIALI DI CALCIO: IL SORTEGGIO PERFETTO</h1>
+            
+            <div class="question-box">
+                <div class="emoji">⚽</div>
+                <p>Mondiali di calcio: 32 squadre</p>
+                <p style="margin-top: 20px;">Fase a gironi: 8 gruppi da 4 squadre</p>
+                <p style="margin-top: 30px; font-size: 1.5em;">
+                    Quanti sorteggi diversi sono matematicamente possibili?
+                </p>
+            </div>
+            
+            <button class="reveal-answer" onclick="revealAnswer('answer16')">
+                🎱 Rivela il numero pazzesco!
+            </button>
+            
+            <div class="answer" id="answer16">
+                <h3>Il calcolo più complesso finora...</h3>
+                
+                <div style="background: rgba(0,0,0,0.3); padding: 30px; border-radius: 15px; margin: 30px 0;">
+                    <p style="font-size: 1.3em; line-height: 1.8;">
+                        Dobbiamo:<br>
+                        1️⃣ Scegliere 4 squadre per il gruppo A tra 32<br>
+                        2️⃣ Scegliere 4 squadre per il gruppo B tra le 28 rimanenti<br>
+                        3️⃣ Continuare così per tutti gli 8 gruppi<br>
+                        4️⃣ Dividere per $8!$ perché l'ordine dei gruppi non conta
+                    </p>
+                    
+                    <div style="font-size: 1.3em; margin: 25px 0;">
+                        $$\frac{\binom{32}{4} \times \binom{28}{4} \times \binom{24}{4} \times \binom{20}{4} \times \binom{16}{4} \times \binom{12}{4} \times \binom{8}{4} \times \binom{4}{4}}{8!}$$
+                    </div>
+                </div>
+                
+                <div class="big-number" style="font-size: 2.8em;">
+                    ≈ 1,5 × 10²⁷
+                </div>
+                
+                <h3>Un QUADRILIONE di QUADRILIONI!</h3>
+                
+                <div class="fact-box">
+                    <strong>🌍 PER RENDERE L'IDEA:</strong><br><br>
+                    Se ogni essere umano sulla Terra (8 miliardi) facesse 1 sorteggio al secondo da quando esiste l'universo (13,8 miliardi di anni), avremmo esplorato solo una frazione infinitesimale di tutti i possibili sorteggi!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 17: FINALE MOTIVAZIONALE -->
+    <div class="slide" id="slide17" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="slide-content" style="text-align: center;">
+            <h1 style="font-size: 3.5em; margin-bottom: 40px;">🎓 QUINDI...</h1>
+            
+            <div style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); padding: 40px; border-radius: 20px; margin: 30px 0;">
+                <h2 style="font-size: 2.5em; margin-bottom: 30px;">Il Calcolo Combinatorio ti permette di:</h2>
+                
+                <div style="text-align: left; font-size: 1.5em; line-height: 2.2; margin: 30px;">
+                    <p>✅ <strong>Valutare</strong> le tue probabilità di vincere (o perdere!) alle lotterie</p>
+                    <p>✅ <strong>Creare</strong> password sicure e capire quanto sono vulnerabili</p>
+                    <p>✅ <strong>Comprendere</strong> come funzionano gli algoritmi di Google, Netflix, Spotify</p>
+                    <p>✅ <strong>Analizzare</strong> strategie nei giochi (poker, scacchi, ...)</p>
+                    <p>✅ <strong>Capire</strong> la genetica e l'unicità biologica</p>
+                    <p>✅ <strong>Organizzare</strong> tornei ed eventi</p>
+                    <p>✅ <strong>Prevedere</strong> scenari in economia e finanza</p>
+                </div>
+            </div>
+            
+            <div class="emoji">🚀</div>
+            
+            <h2 style="font-size: 2.8em; margin-top: 40px; color: #ffd700;">
+                Non è solo matematica astratta...<br>
+                <span style="color: #fff; margin-top: 20px; display: block;">
+                    È il linguaggio del MONDO REALE!
+                </span>
+            </h2>
+        </div>
+    </div>
+
+    <!-- SLIDE 18: SFIDA FINALE -->
+    <div class="slide" id="slide18" style="background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);">
+        <div class="slide-content">
+            <h1>🎯 SFIDA FINALE: RISOLVI PRIMA DI INIZIARE!</h1>
+            
+            <div class="question-box" style="color: #333;">
+                <div class="emoji">🤔</div>
+                <p style="font-size: 1.8em; font-weight: bold;">
+                    La tua classe organizza una gita
+                </p>
+                <p style="margin-top: 30px; font-size: 1.3em;">
+                    👥 Siete in 25 studenti<br>
+                    🚐 Il pulmino ha solo 15 posti<br>
+                    😢 Qualcuno deve restare a casa...
+                </p>
+                <p style="margin-top: 40px; font-size: 1.6em; color: #d32f2f;">
+                    <strong>In quanti modi diversi si può scegliere chi parte?</strong>
+                </p>
+            </div>
+            
+            <button class="reveal-answer" onclick="revealAnswer('answer18')" style="background: #eb3349; font-size: 1.5em; padding: 25px 50px;">
+                💡 Pensa... poi clicca!
+            </button>
+            
+            <div class="answer" id="answer18">
+                <h3 style="color: #333; font-size: 2em;">Analizza il problema...</h3>
+                
+                <div style="background: rgba(255,255,255,0.9); color: #333; padding: 40px; border-radius: 20px; margin: 30px 0;">
+                    <p style="font-size: 1.4em; line-height: 2;">
+                        ❓ <strong>L'ordine conta?</strong> NO (non importa chi sale per primo sul pulmino)<br><br>
+                        ❓ <strong>Ci sono ripetizioni?</strong> NO (ogni studente può essere scelto una sola volta)<br><br>
+                        ❓ <strong>Quanti ne scegliamo?</strong> 15 su 25
+                    </p>
+                    
+                    <p style="font-size: 1.8em; margin-top: 30px; color: #eb3349;">
+                        <strong>→ COMBINAZIONI SEMPLICI!</strong>
+                    </p>
+                </div>
+                
+                <div style="font-size: 2em; margin: 30px 0;">
+                    $$C_{25,15} = \binom{25}{15} = \frac{25!}{15! \cdot 10!}$$
+                </div>
+                
+                <div class="big-number" style="color: #ffd700; font-size: 4em;">
+                    3.268.760
+                </div>
+                
+                <h3 style="color: #333; font-size: 2em;">Oltre 3 MILIONI di modi diversi!</h3>
+                
+                <div class="fact-box" style="color: #333; margin-top: 40px;">
+                    <strong>🎲 CURIOSITÀ:</strong> Nota che:<br>
+                    $$\binom{25}{15} = \binom{25}{10}$$<br><br>
+                    Scegliere 15 studenti che partono è uguale a scegliere 10 studenti che restano!<br>
+                    <span style="font-size: 1.3em; color: #eb3349;">Questa è la <strong>legge delle classi complementari</strong>!</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 19: TRADING E FINANZA -->
+    <div class="slide" id="slide19" style="background: linear-gradient(135deg, #1a2a6c 0%, #b21f1f 50%, #fdbb2d 100%);">
+        <div class="slide-content">
+            <h1>💹 WALL STREET: GESTIRE UN PORTAFOGLIO</h1>
+            
+            <div class="question-box">
+                <div class="emoji">💰</div>
+                <p>Sei un investitore con <strong>100.000€</strong></p>
+                <p style="margin-top: 20px;">Vuoi investire in <strong>5 azioni diverse</strong> tra le 50 più promettenti</p>
+                <p style="margin-top: 30px; font-size: 1.4em;">
+                    Quante combinazioni di investimento puoi considerare?
+                </p>
+            </div>
+            
+            <button class="reveal-answer" onclick="revealAnswer('answer19')">
+                📊 Scopri le tue opzioni!
+            </button>
+            
+            <div class="answer" id="answer19">
+                <h3>Scelta delle 5 azioni tra 50...</h3>
+                
+                <div style="font-size: 1.8em; margin: 30px 0;">
+                    $$C_{50,5} = \binom{50}{5} = \frac{50!}{5! \cdot 45!}$$
+                </div>
+                
+                <div class="big-number" style="font-size: 3.5em;">
+                    2.118.760
+                </div>
+                
+                <h3>Oltre 2 MILIONI di portafogli diversi!</h3>
+                
+                <div style="margin-top: 40px; background: rgba(0,0,0,0.4); padding: 30px; border-radius: 15px;">
+                    <h3 style="font-size: 1.8em; margin-bottom: 20px;">Ma non è finita...</h3>
+                    <p style="font-size: 1.3em; line-height: 1.8;">
+                        Dopo aver scelto le 5 azioni, devi decidere <strong>quanto investire in ciascuna</strong>!<br><br>
+                        Se consideri incrementi di 5.000€, hai 20 "unità" da distribuire tra 5 azioni...<br><br>
+                        Questo aggiunge altre <strong>combinazioni con ripetizione</strong>!
+                    </p>
+                    
+                    <div style="font-size: 1.5em; margin: 20px 0; color: #fdbb2d;">
+                        $$C'_{5,20} = \binom{24}{20} = 10.626$$
+                    </div>
+                </div>
+                
+                <div class="fact-box">
+                    <strong>💼 I TRADER PROFESSIONISTI:</strong> Usano il calcolo combinatorio insieme alla teoria delle probabilità per analizzare migliaia di scenari possibili e scegliere la strategia ottimale. Chi non conosce la matematica è in svantaggio!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 20: CONCLUSIONE EPICA -->
+    <div class="slide" id="slide20" style="background: linear-gradient(135deg, #000000 0%, #434343 100%); text-align: center;">
+        <div class="slide-content">
+            <div class="emoji" style="font-size: 8em;">🔥</div>
+            
+            <h1 style="font-size: 4em; margin: 30px 0;">IL CALCOLO COMBINATORIO È...</h1>
+            
+            <div style="font-size: 2.5em; line-height: 2; margin: 50px 0;">
+                <p style="animation: fadeInUp 1s;">💪 <span class="highlight">POTENTE</span></p>
+                <p style="animation: fadeInUp 1.5s;">🌍 <span class="highlight">OVUNQUE</span></p>
+                <p style="animation: fadeInUp 2s;">🎯 <span class="highlight">ESSENZIALE</span></p>
+                <p style="animation: fadeInUp 2.5s;">🚀 <span class="highlight">INCREDIBILE</span></p>
+            </div>
+            
+            <div style="background: rgba(255,215,0,0.2); backdrop-filter: blur(10px); padding: 50px; border-radius: 25px; margin: 50px 0; border: 3px solid #ffd700;">
+                <h2 style="font-size: 3em; color: #ffd700; margin-bottom: 30px;">
+                    E ORA...
+                </h2>
+                <p style="font-size: 2.2em; line-height: 1.8;">
+                    Sei pronto a scoprire le <strong style="color: #ffd700;">FORMULE SEGRETE</strong><br>
+                    che stanno dietro a tutti questi numeri incredibili?
+                </p>
+                
+                <div class="emoji" style="font-size: 6em; margin: 40px 0;">🎓</div>
+                
+                <h2 style="font-size: 3.5em; color: #ffd700; text-shadow: 3px 3px 6px rgba(0,0,0,0.7);">
+                    BENVENUTI NEL MONDO DEL<br>
+                    CALCOLO COMBINATORIO!
+                </h2>
+            </div>
+            
+            <div style="margin-top: 50px; font-size: 1.5em; opacity: 0.8;">
+                <p>Prossima lezione: scopriremo insieme come calcolare tutti questi numeri</p>
+                <p style="margin-top: 15px;">e molto, molto altro... 🌟</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVIGAZIONE -->
+    <div class="navigation">
+        <button class="nav-button" onclick="previousSlide()">← Indietro</button>
+        <button class="nav-button" onclick="nextSlide()">Avanti →</button>
+    </div>
+    
+    <!-- INDICATORI SLIDE -->
+    <div class="slide-indicator" id="slideIndicator"></div>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 20;
+        
+        // Inizializza gli indicatori
+        function initIndicators() {
+            const indicator = document.getElementById('slideIndicator');
+            for (let i = 1; i <= totalSlides; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'dot';
+                if (i === 1) dot.classList.add('active');
+                dot.onclick = () => goToSlide(i);
+                indicator.appendChild(dot);
+            }
+        }
+        
+        // Vai alla slide specifica
+        function goToSlide(n) {
+            if (n < 1 || n > totalSlides) return;
+            
+            // Nascondi la slide corrente
+            document.getElementById('slide' + currentSlide).style.display = 'none';
+            
+            // Aggiorna il numero della slide corrente
+            currentSlide = n;
+            
+            // Mostra la nuova slide
+            document.getElementById('slide' + currentSlide).style.display = 'flex';
+            
+            // Aggiorna gli indicatori
+            updateIndicators();
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        // Slide successiva
+        function nextSlide() {
+            goToSlide(currentSlide + 1);
+        }
+        
+        // Slide precedente
+        function previousSlide() {
+            goToSlide(currentSlide - 1);
+        }
+        
+        // Aggiorna indicatori
+        function updateIndicators() {
+            const dots = document.querySelectorAll('.dot');
+            dots.forEach((dot, index) => {
+                if (index + 1 === currentSlide) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            });
+        }
+        
+        // Mostra/nascondi risposta
+        function revealAnswer(answerId) {
+            const answer = document.getElementById(answerId);
+            if (answer.style.display === 'block') {
+                answer.style.display = 'none';
+            } else {
+                answer.style.display = 'block';
+                // Scroll per vedere la risposta
+                setTimeout(() => {
+                    answer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
+            }
+        }
+        
+        // Gestione tastiera
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                previousSlide();
+            }
+        });
+        
+        // Inizializzazione
+        document.addEventListener('DOMContentLoaded', function() {
+            // Nascondi tutte le slide tranne la prima
+            for (let i = 2; i <= totalSlides; i++) {
+                const slide = document.getElementById('slide' + i);
+                if (slide) {
+                    slide.style.display = 'none';
+                }
+            }
+            
+            // Inizializza indicatori
+            initIndicators();
+            
+            console.log('Presentazione caricata! Usa le frecce o i pulsanti per navigare.');
+        });
+    </script>
+</body>
+</html>

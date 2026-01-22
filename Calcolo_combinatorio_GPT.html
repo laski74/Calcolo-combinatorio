@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Calcolo combinatorio – Schede interattive (MathJax)</title>
+
+  <!-- MathJax CONFIG (prima del load) -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$']],
+        displayMath: [['$$', '$$']],
+        processEscapes: true
+      },
+      options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <style>
+    :root{
+      --bg:#0b1020; --panel:#111a33; --panel2:#0f1730;
+      --text:#e9eefc; --muted:#b8c4ea; --acc:#7aa2ff; --acc2:#9cffd7;
+      --line:rgba(255,255,255,.10); --shadow:0 10px 30px rgba(0,0,0,.35);
+      --r:16px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--text); background:var(--bg);
+      background:
+        radial-gradient(1200px 700px at 20% 10%, rgba(122,162,255,.22), transparent 50%),
+        radial-gradient(900px 600px at 80% 20%, rgba(156,255,215,.14), transparent 55%),
+        radial-gradient(900px 650px at 60% 90%, rgba(255,255,255,.06), transparent 55%),
+        var(--bg);
+      min-height:100vh;
+    }
+    header{
+      position:sticky; top:0; z-index:10;
+      backdrop-filter:blur(10px);
+      background:linear-gradient(to bottom, rgba(11,16,32,.88), rgba(11,16,32,.55));
+      border-bottom:1px solid var(--line);
+    }
+    .wrap{max-width:1200px; margin:0 auto; padding:16px}
+    h1{margin:0; font-size:20px}
+    .sub{margin:6px 0 0; color:var(--muted); font-size:14px; line-height:1.35}
+    .tabs{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px}
+    .tabbtn{
+      border:1px solid var(--line); background:rgba(255,255,255,.06);
+      color:var(--text); padding:8px 10px; border-radius:999px;
+      cursor:pointer; font-size:13px;
+    }
+    .tabbtn[aria-selected="true"]{border-color:rgba(122,162,255,.55); box-shadow:0 0 0 3px rgba(122,162,255,.15) inset}
+    main{max-width:1200px; margin:0 auto; padding:16px}
+    .grid{display:grid; grid-template-columns: repeat(12, 1fr); gap:12px}
+    .card{
+      grid-column: span 6;
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid var(--line); border-radius:var(--r);
+      box-shadow:var(--shadow); overflow:hidden;
+    }
+    @media (max-width: 900px){ .card{grid-column:span 12} }
+    .cardhd{
+      padding:12px 14px; display:flex; align-items:center; justify-content:space-between;
+      gap:10px; border-bottom:1px solid var(--line);
+      background:rgba(17,26,51,.55);
+    }
+    .tag{font-size:12px; color:var(--muted); border:1px solid var(--line); padding:4px 8px; border-radius:999px}
+    .cardbd{padding:12px 14px}
+    .theory p{margin:0 0 10px; color:var(--text); line-height:1.45}
+    .theory ul{margin:0; padding-left:18px; color:var(--muted)}
+    .ex{padding:10px 0; border-top:1px dashed rgba(255,255,255,.14)}
+    .ex:first-child{border-top:none; padding-top:0}
+    .ex .q{color:var(--text); line-height:1.45}
+    .btns{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
+    button.small{
+      border:1px solid var(--line); background:rgba(255,255,255,.06);
+      color:var(--text); padding:6px 10px; border-radius:10px;
+      cursor:pointer; font-size:12px;
+    }
+    .reveal{
+      margin-top:8px; padding:10px; border-radius:12px;
+      background:rgba(122,162,255,.10); border:1px solid rgba(122,162,255,.25);
+      color:var(--text); display:none;
+    }
+    .reveal.sol{background:rgba(156,255,215,.10); border-color:rgba(156,255,215,.25)}
+    .note{
+      color:var(--muted); font-size:12px; margin-top:10px; line-height:1.35
+    }
+    table{width:100%; border-collapse:collapse; font-size:13px}
+    th,td{border:1px solid var(--line); padding:8px; text-align:left}
+    th{background:rgba(255,255,255,.06)}
+    .map{
+      margin-top:12px; padding:12px; border-radius:var(--r);
+      border:1px solid var(--line); background:rgba(255,255,255,.04);
+      color:var(--muted); line-height:1.45;
+    }
+    .map b{color:var(--text)}
+    .pill{color:var(--muted); font-size:12px; margin-left:8px}
+  </style>
+</head>
+
+<body>
+<header>
+  <div class="wrap">
+    <h1>Calcolo combinatorio – Schede interattive</h1>
+    <p class="sub">
+      Teoria + esercizi con <b>MathJax</b>, pulsanti <b>Svolgimento</b>/<b>Soluzione</b> a scomparsa.
+      (Esercizi estratti dal PDF condiviso.)
+    </p>
+    <div class="tabs" id="tabs"></div>
+  </div>
+</header>
+
+<main>
+  <div id="content" class="grid"></div>
+</main>
+
+<script>
+/* ==========================
+   1) DATI: teoria + banca esercizi (estratti dal PDF)
+   Nota: alcuni testi nel PDF risultano "compressi" per impaginazione a colonne.
+   Nella versione 2 posso pulirli ulteriormente e aggiungere più esercizi unici.
+========================== */
+
+const TOPICS = [
+  { id:"raggr", name:"Raggruppamenti" },
+  { id:"disp",  name:"Disposizioni" },
+  { id:"perm",  name:"Permutazioni" },
+  { id:"comb",  name:"Combinazioni" },
+  { id:"bin",   name:"Binomio di Newton" },
+  { id:"map",   name:"Tabella + Mappa" },
+  { id:"mix",   name:"Esercizi misti" }
+];
+
+const THEORY = {
+  raggr: [
+    {title:"Idea base", points:[
+      "Quando scegli un elemento da ogni insieme (o categoria) e l’ordine è fissato dalla posizione: regola del prodotto.",
+      "Esempio tipico: coppie (ragazza×ragazzo), terne (classe1×classe2×classe3), percorsi a tappe."
+    ], formula:"Se hai $n_1, n_2,\\dots, n_k$ scelte indipendenti: $$N=n_1\\cdot n_2\\cdots n_k.$$"},
+    {title:"Diagramma ad albero", points:[
+      "Rappresenta le scelte in sequenza: ogni livello moltiplica le possibilità.",
+      "Utile per controllare errori e vincoli semplici."
+    ], formula:"Moltiplicazione lungo i rami."},
+    {title:"Vincoli e casi", points:[
+      "Se ci sono vincoli (pari/dispari, ruoli diversi, posti specifici), spesso conviene dividere in casi.",
+      "Somma dei casi disgiunti."
+    ], formula:"$$N = N_1 + N_2 + \\cdots$$"},
+    {title:"Con/Senza ripetizione", points:[
+      "Raggruppamenti spesso implicano ripetizione possibile se non vietata.",
+      "Se vietata, si passa spesso a disposizioni/permutazioni."
+    ], formula:"Prodotto con scelte che cambiano se non ripeti."},
+    {title:"Errori comuni", points:[
+      "Confondere “ordine” e “scelta”.",
+      "Dimenticare un vincolo (es. prime posizioni lettere, poi cifre)."
+    ], formula:"Controllo: unità, coerenza, casi estremi."}
+  ],
+
+  disp: [
+    {title:"Definizione", points:[
+      "Disposizioni: scegli $k$ elementi distinti da $n$ e li ordini (ordine importante).",
+      "Tipico: codici, sigle, podi, selezione + ordine."
+    ], formula:"$$D_{n,k}=\\frac{n!}{(n-k)!}$$"},
+    {title:"Senza ripetizione", points:[
+      "Se non puoi ripetere: le scelte diminuiscono (n, n−1, …)."
+    ], formula:"$$D_{n,k}=n(n-1)\\cdots(n-k+1).$$"},
+    {title:"Con ripetizione", points:[
+      "Se puoi ripetere: ogni posizione ha $n$ scelte."
+    ], formula:"$$D^{\\*}_{n,k}=n^k.$$"},
+    {title:"Vincoli su posizioni", points:[
+      "Se alcune posizioni hanno insiemi diversi (lettere poi cifre), usa la regola del prodotto per blocchi."
+    ], formula:"Esempio: $22^4\\cdot 10^3$ (se 4 lettere e 3 cifre)."},
+    {title:"Strategia rapida", points:[
+      "1) Capisci se l’ordine conta.",
+      "2) Controlla ripetizione sì/no.",
+      "3) Applica formula e vincoli."
+    ], formula:"Checklist sempre uguale."}
+  ],
+
+  perm: [
+    {title:"Definizione", points:[
+      "Permutazioni: ordini tutti gli $n$ elementi (ordine importante).",
+      "Tipico: classifiche, disposizione in fila."
+    ], formula:"$$P_n=n!$$"},
+    {title:"Con ripetizioni", points:[
+      "Se ci sono elementi uguali (lettere ripetute), dividi per i fattoriali delle ripetizioni."
+    ], formula:"$$P=\\frac{n!}{n_1!n_2!\\cdots}$$"},
+    {title:"Permutazioni circolari", points:[
+      "Se conta solo la disposizione relativa in cerchio: fissi un elemento."
+    ], formula:"$$P_{n}^{\\circ}=(n-1)!$$"},
+    {title:"Vincoli (posti fissi)", points:[
+      "Se alcuni elementi devono stare insieme o in posizioni specifiche: blocchi o casi."
+    ], formula:"Blocchi + casi disgiunti."},
+    {title:"Errori tipici", points:[
+      "Usare $n!$ quando in realtà si scelgono solo $k$ elementi (disposizioni)."
+    ], formula:"Se scegli e ordini: $D_{n,k}$, non $n!$."}
+  ],
+
+  comb: [
+    {title:"Definizione", points:[
+      "Combinazioni: scegli $k$ elementi tra $n$ senza ordine (ordine NON importante).",
+      "Tipico: squadre, commissioni, sestine del lotto."
+    ], formula:"$$C_{n,k}=\\binom{n}{k}=\\frac{n!}{k!(n-k)!}$$"},
+    {title:"Complementare", points:[
+      "Spesso conviene usare il complementare: “almeno uno” = totale − “nessuno”."
+    ], formula:"$$N(\\ge1)=N(\\text{tot})-N(0).$$"},
+    {title:"Vincoli con categorie", points:[
+      "Se devi scegliere da gruppi (es. almeno 2 donne): somma sui casi possibili."
+    ], formula:"$$\\sum_k \\binom{a}{k}\\binom{b}{r-k}$$"},
+    {title:"Con ripetizione", points:[
+      "Se puoi scegliere ripetendo: stelle e sbarre (se affrontato)."
+    ], formula:"$$\\binom{n+k-1}{k}$$"},
+    {title:"Controllo ordine", points:[
+      "Se cambiando l’ordine ottieni lo stesso gruppo, allora combinazioni."
+    ], formula:"“gruppo” → combinazioni."}
+  ],
+
+  bin: [
+    {title:"Formula di Newton", points:[
+      "Sviluppo di $(A+B)^n$ in somma di termini con coefficienti binomiali."
+    ], formula:"$$(A+B)^n=\\sum_{k=0}^{n}\\binom{n}{k}A^{n-k}B^k$$"},
+    {title:"Triangolo di Tartaglia", points:[
+      "I coefficienti $\\binom{n}{k}$ si leggono nella riga n-esima del triangolo.",
+      "Simmetria: $\\binom{n}{k}=\\binom{n}{n-k}$."
+    ], formula:"Somma riga: $$\\sum_k \\binom{n}{k}=2^n$$"},
+    {title:"Termine generale", points:[
+      "Il (k+1)-esimo termine: $\\binom{n}{k}A^{n-k}B^k$ (attenzione all’indice)."
+    ], formula:"Controlla segni se $B$ è negativo."},
+    {title:"Termine richiesto", points:[
+      "Per ‘terzo termine’ → spesso $k=2$ (se il primo è $k=0$).",
+      "Leggi bene la convenzione dell’esercizio."
+    ], formula:"Primo termine: $k=0$."},
+    {title:"Coefficienti", points:[
+      "Se ti danno un coefficiente e chiedono n: imposta $\\binom{n}{k}=\\text{dato}$ e risolvi."
+    ], formula:"Usa proprietà/identità se serve."}
+  ],
+};
+
+/* Esercizi (banca) – estratti dal PDF condiviso.
+   Ogni elemento: {text, answer, page}
+   Nota: per arrivare a 20×5 per tipologia, se una banca è corta, il codice ricicla in modo ciclico. */
+const EXPOOL = {
+  raggr: [
+    {text:"In una scuola di ballo sono iscritte dodici donne e sette uomini. Quante sono le coppie che si possono formare?", answer:"84", page:15},
+    {text:"In una classe vi sono otto ragazze e undici ragazzi. Quante sono le coppie formate da una ragazza e un ragazzo che si possono formare?", answer:"88", page:15},
+    {text:"In tre classi quinte di una scuola ci sono rispettivamente 22, 18 e 23 alunni. Occorre mandare una rappresentanza formata da un alunno di ciascuna quinta. Quante sono le terne di studenti che è possibile formare?", answer:"9108", page:15},
+    {text:"Osserva il diagramma ad albero. Scrivi gli insiemi con i quali formare i raggruppamenti e quanti sono i raggruppamenti possibili.", answer:"(dipende dal diagramma nel testo)", page:15},
+    {text:"Quante sono le coppie possibili scegliendo 1 elemento dal primo gruppo e 1 dal secondo (regola del prodotto)?", answer:"n·m", page:15}
+  ],
+  disp: [
+    {text:"Calcola quante targhe automobilistiche sono possibili con due lettere seguite da tre cifre e di nuovo da due lettere. (Varianti con vincoli nel testo.)", answer:"(vedi condizioni: es. 484000; 29282000)", page:33},
+    {text:"Un test è formato da 8 quesiti a risposta multipla con cinque possibilità. In quanti modi puoi rispondere alle otto domande?", answer:"390625", page:33},
+    {text:"Calcola quante sigle di cinque elementi, tutti diversi, si possono formare con lettere e cifre, sapendo che i primi tre posti sono lettere e gli ultimi due cifre.", answer:"718200 (esempio nel testo)", page:14},
+    {text:"Quanti codici di k caratteri si formano senza ripetizione scegliendo tra n simboli?", answer:"D_{n,k}=n!/(n-k)!", page:18},
+    {text:"Quanti codici di k caratteri si formano con ripetizione scegliendo tra n simboli?", answer:"n^k", page:18}
+  ],
+  perm: [
+    {text:"Quanti numeri pari di 3 cifre si possono scrivere utilizzando le cifre dell’insieme A={1,2,3,5,7}?", answer:"25", page:21},
+    {text:"Quanti numeri dispari di 3 cifre si possono scrivere utilizzando le cifre dell’insieme B={1,2,3,4,5,7}?", answer:"144", page:21},
+    {text:"In quanti modi si possono distribuire nove premi a nove bambini?", answer:"362880", page:22},
+    {text:"Quanti numeri di dieci cifre diverse si possono scrivere con le dieci cifre decimali?", answer:"3265920", page:22},
+    {text:"In quanti modi può presentarsi la classifica finale di una gara con 8 concorrenti?", answer:"40320", page:22}
+  ],
+  comb: [
+    {text:"Nel gioco del Superenalotto si vince se si indovinano i 6 numeri estratti tra 1 e 90. Quante sono le possibili sestine?", answer:"C(90,6)", page:33},
+    {text:"Quante cinquine nel gioco dell’otto contengono una quaterna prefissata?", answer:"86", page:33},
+    {text:"In quanti modi un’associazione di 40 soci può costituire un comitato direttivo composto da k membri?", answer:"C(40,k)", page:14},
+    {text:"Quante squadre di k persone si possono formare scegliendo tra n persone?", answer:"C(n,k)", page:25},
+    {text:"Calcola quante combinazioni di r oggetti si possono scegliere da n oggetti senza ordine.", answer:"n!/[r!(n-r)!]", page:25}
+  ],
+  bin: [
+    {text:"Calcola il quarto termine dello sviluppo di $(2x+1y)^?$ (esercizio sul ‘quarto termine’ nel testo).", answer:"-70x^7y^3", page:33},
+    {text:"Determina il terzo, il quinto e l’ottavo termine dello sviluppo di $(x-1)^?$.", answer:"36x^7; 126x^5; -36x^0", page:33},
+    {text:"Determina n, sapendo che il coefficiente del terzo termine dello sviluppo di $(x+2y)^n$ è 60.", answer:"6", page:33},
+    {text:"(A+B)^n: usa la formula del binomio di Newton e i coefficienti binomiali.", answer:"\\sum_{k=0}^{n}\\binom{n}{k}A^{n-k}B^k", page:14},
+    {text:"Somma dei coefficienti sull’n-esima riga del triangolo di Tartaglia.", answer:"2^n", page:14}
+  ]
+};
+
+/* ==========================
+   2) GENERATORE CARD ESERCIZI
+========================== */
+
+function makeBtn(label, onClick){
+  const b=document.createElement("button");
+  b.className="small";
+  b.type="button";
+  b.textContent=label;
+  b.addEventListener("click", onClick);
+  return b;
+}
+
+function toggle(el){
+  el.style.display = (el.style.display==="none" || !el.style.display) ? "block" : "none";
+  // rerender MathJax in revealed content
+  if (window.MathJax && window.MathJax.typesetPromise){
+    MathJax.typesetPromise([el]).catch(()=>{});
+  }
+}
+
+function renderExercise(ex, topicName){
+  const wrap=document.createElement("div");
+  wrap.className="ex";
+
+  const q=document.createElement("div");
+  q.className="q";
+  q.innerHTML = `<b>Esercizio.</b> ${ex.text} <span class="pill">p.${ex.page}</span>`;
+  wrap.appendChild(q);
+
+  const btns=document.createElement("div"); btns.className="btns";
+
+  // Svolgimento (breve, ma sensato e coerente col tipo)
+  const work=document.createElement("div");
+  work.className="reveal";
+  work.innerHTML = `<b>Svolgimento (schema):</b><br>${makeWorkHint(topicName, ex)}`;
+  work.style.display="none";
+
+  // Soluzione
+  const sol=document.createElement("div");
+  sol.className="reveal sol";
+  sol.innerHTML = `<b>Soluzione:</b> ${ex.answer}`;
+  sol.style.display="none";
+
+  btns.appendChild(makeBtn("Svolgimento", ()=>toggle(work)));
+  btns.appendChild(makeBtn("Soluzione", ()=>toggle(sol)));
+
+  wrap.appendChild(btns);
+  wrap.appendChild(work);
+  wrap.appendChild(sol);
+
+  return wrap;
+}
+
+function makeWorkHint(topicName, ex){
+  // Hint “minimo ma corretto” (versione 2: svolgimenti completi uno per uno)
+  const t=topicName.toLowerCase();
+  if(t.includes("raggr")){
+    return `Riconosci scelte in sequenza → <b>regola del prodotto</b>. Imposta $N=n_1\\cdot n_2\\cdots n_k$ rispettando i vincoli (categorie/ruoli).`;
+  }
+  if(t.includes("disp")){
+    return `Ordine importante (scelta + posizioni). Se senza ripetizione: $D_{n,k}=\\frac{n!}{(n-k)!}$. Se con ripetizione: $n^k$. Applica eventuali vincoli di posizione.`;
+  }
+  if(t.includes("perm")){
+    return `Stai ordinando tutti gli elementi: usa $P_n=n!$. Se elementi ripetuti: $\\frac{n!}{n_1!n_2!\\cdots}$. Se circolare: $(n-1)!$.`;
+  }
+  if(t.includes("comb")){
+    return `Scegli senza ordine: $C_{n,k}=\\binom{n}{k}=\\frac{n!}{k!(n-k)!}$. Se “almeno uno”: usa complementare (totale − nessuno).`;
+  }
+  if(t.includes("binom")){
+    return `Usa il binomio: $(A+B)^n=\\sum_{k=0}^{n}\\binom{n}{k}A^{n-k}B^k$. Per il “termine i-esimo”: collega $i$ con $k$ (di solito $i=k+1$).`;
+  }
+  return `Imposta il conteggio con il modello corretto e calcola.`;
+}
+
+/* ==========================
+   3) RENDER: 5 teoria + 5 esercizi per tipologia
+========================== */
+
+function card(title, tag){
+  const c=document.createElement("section");
+  c.className="card";
+  const hd=document.createElement("div");
+  hd.className="cardhd";
+  hd.innerHTML = `<div><b>${title}</b></div><div class="tag">${tag}</div>`;
+  const bd=document.createElement("div");
+  bd.className="cardbd";
+  c.appendChild(hd); c.appendChild(bd);
+  return {c, bd};
+}
+
+function cyclePick(arr, start, count){
+  const out=[];
+  for(let i=0;i<count;i++){
+    out.push(arr[(start+i)%arr.length]);
+  }
+  return out;
+}
+
+function renderTopic(topicId){
+  const host=document.getElementById("content");
+  host.innerHTML="";
+
+  // MAP
+  if(topicId==="map"){
+    const A=card("Tabella riassuntiva", "Sintesi"); 
+    A.bd.innerHTML = `
+      <table>
+        <thead><tr><th>Situazione</th><th>Ordine</th><th>Ripetizione</th><th>Formula</th></tr></thead>
+        <tbody>
+          <tr><td>Raggruppamenti (scelte successive)</td><td>posizioni fissate</td><td>dipende</td><td>$N=n_1\\cdot n_2\\cdots n_k$</td></tr>
+          <tr><td>Disposizioni</td><td>SI</td><td>NO</td><td>$D_{n,k}=\\frac{n!}{(n-k)!}$</td></tr>
+          <tr><td>Disposizioni con ripetizione</td><td>SI</td><td>SI</td><td>$n^k$</td></tr>
+          <tr><td>Permutazioni</td><td>SI</td><td>NO</td><td>$P_n=n!$</td></tr>
+          <tr><td>Permutazioni con ripetizione</td><td>SI</td><td>SI (uguali)</td><td>$\\frac{n!}{n_1!n_2!\\cdots}$</td></tr>
+          <tr><td>Combinazioni</td><td>NO</td><td>NO</td><td>$\\binom{n}{k}=\\frac{n!}{k!(n-k)!}$</td></tr>
+          <tr><td>Binomio di Newton</td><td>—</td><td>—</td><td>$(A+B)^n=\\sum_{k=0}^{n}\\binom{n}{k}A^{n-k}B^k$</td></tr>
+        </tbody>
+      </table>
+      <div class="map">
+        <b>Mappa concettuale (testuale):</b><br>
+        <b>Conta?</b> → (1) <b>Ordine?</b><br>
+        • Se <b>NO</b> → <b>Combinazioni</b> ($\\binom{n}{k}$).<br>
+        • Se <b>SI</b> → (2) <b>Stai usando tutti gli elementi?</b><br>
+        &nbsp;&nbsp;– Se <b>SI</b> → <b>Permutazioni</b> ($n!$ o con ripetizioni).<br>
+        &nbsp;&nbsp;– Se <b>NO</b> → <b>Disposizioni</b> ($\\frac{n!}{(n-k)!}$ o $n^k$).<br>
+        (3) Se fai scelte “a blocchi” (insiemi diversi per posizione) → <b>regola del prodotto</b> (raggruppamenti).
+      </div>
+      <p class="note">Suggerimento: stampa questa tabella come “foglio guida” durante gli esercizi.</p>
+    `;
+    host.appendChild(A.c);
+    if(window.MathJax?.typesetPromise) MathJax.typesetPromise([host]).catch(()=>{});
+    return;
+  }
+
+  // MIX
+  if(topicId==="mix"){
+    const all = ["raggr","disp","perm","comb","bin"].flatMap(k => EXPOOL[k].map(e => ({...e, _topic:k})));
+    // prendo 60 (3 schede da 20) + altre 40 (2 schede) ciclati
+    const mixedCards=5;
+    for(let i=0;i<mixedCards;i++){
+      const C=card(`Misti – Scheda ${i+1}`, "Esercizi");
+      const picked = cyclePick(all, i*20, 20);
+      picked.forEach(ex=>{
+        C.bd.appendChild(renderExercise(ex, "Misti"));
+      });
+      host.appendChild(C.c);
+    }
+    if(window.MathJax?.typesetPromise) MathJax.typesetPromise([host]).catch(()=>{});
+    return;
+  }
+
+  const topicName = TOPICS.find(t=>t.id===topicId).name;
+
+  // 5 teoria
+  const theory = THEORY[topicId] || [];
+  for(let i=0;i<5;i++){
+    const T=theory[i] || {title:`Teoria ${i+1}`, points:["(contenuto da completare)"], formula:""};
+    const C=card(`${topicName} – Teoria ${i+1}: ${T.title}`, "Teoria");
+    C.bd.classList.add("theory");
+    const pts = (T.points||[]).map(p=>`<li>${p}</li>`).join("");
+    C.bd.innerHTML = `
+      <p>${T.formula ? T.formula : ""}</p>
+      <ul>${pts}</ul>
+      <p class="note">Consiglio: fai 1 esempio “ancora” e poi passa agli esercizi della scheda successiva.</p>
+    `;
+    host.appendChild(C.c);
+  }
+
+  // 5 esercizi × 20
+  const pool = EXPOOL[topicId] || [];
+  for(let s=0;s<5;s++){
+    const C=card(`${topicName} – Esercizi ${s+1}`, "20 esercizi");
+    const picked = pool.length ? cyclePick(pool, s*20, 20) : [];
+    picked.forEach(ex=>{
+      C.bd.appendChild(renderExercise(ex, topicName));
+    });
+    if(!pool.length){
+      C.bd.innerHTML = `<p class="note">Nessun esercizio caricato per questa sezione.</p>`;
+    } else {
+      const nUniq = new Set(picked.map(e=>e.text)).size;
+      C.bd.insertAdjacentHTML("beforeend",
+        `<p class="note">Scheda generata dalla banca esercizi estratta dal PDF (unicità nella scheda: ${nUniq}/20). Nella “versione 2” aumento la banca per ridurre i ricicli.</p>`
+      );
+    }
+    host.appendChild(C.c);
+  }
+
+  if(window.MathJax?.typesetPromise) MathJax.typesetPromise([host]).catch(()=>{});
+}
+
+/* ==========================
+   4) TAB UI
+========================== */
+const tabs=document.getElementById("tabs");
+TOPICS.forEach((t,idx)=>{
+  const b=document.createElement("button");
+  b.className="tabbtn";
+  b.textContent=t.name;
+  b.setAttribute("aria-selected", idx===0 ? "true":"false");
+  b.addEventListener("click", ()=>{
+    [...tabs.children].forEach(x=>x.setAttribute("aria-selected","false"));
+    b.setAttribute("aria-selected","true");
+    renderTopic(t.id);
+  });
+  tabs.appendChild(b);
+});
+renderTopic(TOPICS[0].id);
+</script>
+</body>
+</html>
