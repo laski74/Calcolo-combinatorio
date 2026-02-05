@@ -1,0 +1,1288 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Flashcard – Calcolo Combinatorio</title>
+
+  <style>
+    :root{
+      --bg1: #f7fbff;
+      --bg2: #fff7fb;
+      --ink: #1f2a37;
+      --muted: #5b6b7f;
+      --card: #ffffffcc;
+      --stroke: #e6eef7;
+      --shadow: 0 12px 30px rgba(17, 24, 39, .10);
+      --accent: #6aa6ff;
+      --accent2: #7ad7b8;
+      --accent3: #ffb86a;
+      --radius: 18px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: var(--sans);
+      color: var(--ink);
+      background:
+        radial-gradient(900px 500px at 10% 10%, rgba(106,166,255,.22), transparent 60%),
+        radial-gradient(900px 500px at 90% 20%, rgba(122,215,184,.20), transparent 60%),
+        radial-gradient(900px 500px at 50% 90%, rgba(255,184,106,.18), transparent 60%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+      min-height:100vh;
+    }
+    header{
+      position: sticky;
+      top: 0;
+      backdrop-filter: blur(10px);
+      background: rgba(255,255,255,.75);
+      border-bottom: 1px solid var(--stroke);
+      z-index: 5;
+    }
+    .wrap{max-width:1100px;margin:0 auto;padding:18px 18px}
+    .top{display:flex; gap:14px; align-items:center; justify-content:space-between; flex-wrap:wrap;}
+    .brand{display:flex; gap:12px; align-items:center;}
+    .logo{
+      width:44px;height:44px;border-radius:14px;
+      background: conic-gradient(from 200deg, var(--accent), var(--accent2), var(--accent3), var(--accent));
+      box-shadow: 0 8px 18px rgba(31,42,55,.10);
+    }
+    h1{font-size:18px;margin:0;letter-spacing:.2px}
+    .subtitle{font-size:13px;color:var(--muted);margin:2px 0 0 0}
+    .controls{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+    .input, .btn{
+      border:1px solid var(--stroke);
+      border-radius: 999px;
+      background: #fff;
+      padding:10px 14px;
+      font-size:14px;
+      color: var(--ink);
+      box-shadow: 0 8px 18px rgba(17,24,39,.06);
+    }
+    .input{min-width:260px; outline:none}
+    .input:focus{border-color: rgba(106,166,255,.7); box-shadow: 0 0 0 4px rgba(106,166,255,.18), 0 8px 18px rgba(17,24,39,.06)}
+    .btn{cursor:pointer; user-select:none; transition: transform .12s ease}
+    .btn:hover{transform: translateY(-1px)}
+    .btn:active{transform: translateY(0px)}
+    .btn.secondary{background: rgba(255,255,255,.85)}
+    .btn[disabled]{opacity:.55; cursor:not-allowed; transform:none}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      background: rgba(255,255,255,.8);
+      border: 1px dashed rgba(106,166,255,.45);
+      color: var(--muted);
+      font-size:13px;
+    }
+    main{padding: 18px 18px 40px}
+    .grid{
+      max-width:1100px;margin:0 auto;
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+    }
+    .card{height: 320px; perspective: 1100px; outline: none;}
+    .card:focus .card-inner{box-shadow: 0 0 0 4px rgba(106,166,255,.20), var(--shadow)}
+    .card-inner{
+      width:100%; height:100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform .7s cubic-bezier(.2,.8,.2,1);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .card.is-flipped .card-inner{transform: rotateY(180deg)}
+    .card-face{
+      position:absolute; inset:0;
+      border-radius: var(--radius);
+      background: var(--card);
+      border: 1px solid var(--stroke);
+      padding: 18px 18px 16px;
+      display:flex; flex-direction:column; gap:12px;
+      backface-visibility: hidden;
+      overflow:hidden;
+    }
+    .card-face::before{
+      content:"";
+      position:absolute; inset:-60px -60px auto auto;
+      width:180px; height:180px;
+      background: radial-gradient(circle at 30% 30%, rgba(106,166,255,.22), transparent 60%);
+      transform: rotate(12deg);
+      pointer-events:none;
+    }
+    .card-back::before{background: radial-gradient(circle at 30% 30%, rgba(122,215,184,.22), transparent 60%);}
+    .card-front .badge{background: rgba(106,166,255,.18); border-color: rgba(106,166,255,.35)}
+    .card-back .badge{background: rgba(122,215,184,.18); border-color: rgba(122,215,184,.35)}
+
+    .badge{
+      align-self:flex-start;
+      font-size:12px;
+      letter-spacing:.7px;
+      font-weight:800;
+      color: var(--ink);
+      border: 1px solid rgba(0,0,0,.06);
+      border-radius: 999px;
+      padding: 6px 10px;
+      position: relative;
+      z-index: 2;
+    }
+    .sticker{
+      position:absolute;
+      right: 10px;
+      top: 54px;
+      width: 86px;
+      height: 86px;
+      opacity: .92;
+      filter: drop-shadow(0 10px 16px rgba(17,24,39,.10));
+      transform-origin: center;
+      pointer-events:none;
+      z-index: 1;
+    }
+    .sticker.alt{top: 52px;}
+    .floaty{
+      animation: float 3.6s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%   { transform: translateY(0px) rotate(-2deg) scale(1); }
+      50%  { transform: translateY(-8px) rotate(2deg) scale(1.02); }
+      100% { transform: translateY(0px) rotate(-2deg) scale(1); }
+    }
+
+    .q{margin: 0; font-size: 17px; line-height: 1.28; position: relative; z-index: 2; padding-right: 82px;}
+    .a{font-size: 15px; line-height: 1.35; color: var(--ink); position: relative; z-index: 2; padding-right: 82px;}
+    .hint{
+      margin-top:auto;
+      font-size:12px;
+      color: var(--muted);
+      display:flex; align-items:center; gap:8px;
+      position: relative; z-index: 2;
+    }
+    .hint::before{content:"↻"; font-family: var(--mono); opacity:.75;}
+    .card-back{transform: rotateY(180deg);}
+    .empty{
+      max-width:1100px;margin: 16px auto 0;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.70);
+      color: var(--muted);
+      display:none;
+    }
+    footer{max-width:1100px; margin: 22px auto 0; padding: 0 18px 24px; color: var(--muted); font-size: 12px;}
+    kbd{
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 2px 6px;
+      border-radius: 8px;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.85);
+      color: var(--ink);
+    }
+  </style>
+
+  <!-- MathJax config: usare $...$ inline e $$...$$ display (prima della libreria) -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$']],
+        displayMath: [['$$', '$$']],
+        processEscapes: true
+      },
+      options: {
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+      }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+<body>
+  <header>
+    <div class="wrap">
+      <div class="top">
+        <div class="brand">
+          <div class="logo" aria-hidden="true"></div>
+          <div>
+            <h1>Flashcard – Calcolo combinatorio</h1>
+            <div class="subtitle">Clicca una card per girarla • Formule rese con MathJax • Sticker animati ✨</div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <input id="search" class="input" type="search"
+                 placeholder="Cerca (es. combinazioni, D_{n,k}, principio…)"
+                 aria-label="Cerca nelle flashcard" />
+          <button id="shuffle" class="btn" type="button" aria-label="Mescola le flashcard">Mescola</button>
+          <button id="restore" class="btn secondary" type="button" aria-label="Ripristina l'ordine originale" disabled>Ordine originale</button>
+          <span class="pill" title="Scorciatoie da tastiera">
+            <span><kbd>Invio</kbd>/<kbd>Spazio</kbd> gira</span>
+            <span><kbd>Esc</kbd> chiudi</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="grid" id="grid">
+<article class="card" data-card-id="c001" data-index="1" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <h2 class="q">Qual è lo scopo del calcolo combinatorio?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <div class="a">Studia il numero di modi in cui è possibile raggruppare, disporre o ordinare gli elementi di un insieme finito.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c002" data-index="2" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <h2 class="q">Cosa afferma la regola del prodotto (principio fondamentale dei raggruppamenti)?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <div class="a">Se un compito può essere svolto in $n$ modi, un secondo in $m$ modi, un terzo in $k$ modi, il numero totale di modi per svolgere tutti i compiti è $n \cdot m \cdot k \cdot ...$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c003" data-index="3" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2734%27%20y%3D%2736%27%20width%3D%2772%27%20height%3D%2772%27%20rx%3D%2718%27%20fill%3D%27%237ad7b8%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Crect%20x%3D%2756%27%20y%3D%2722%27%20width%3D%2728%27%20height%3D%2718%27%20rx%3D%278%27%20fill%3D%27%236aa6ff%27%20opacity%3D%27.9%27/%3E%0A%3Ccircle%20cx%3D%2756%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2784%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Cpath%20d%3D%27M56%2092c8%208%2020%208%2028%200%27%20fill%3D%27none%27%20stroke%3D%27%231f2a37%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M70%20108v10%27%20stroke%3D%27%23ffb86a%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3C/svg%3E" alt="Sticker Robot" loading="lazy" />
+      <h2 class="q">Cosa sono le disposizioni semplici di $n$ elementi distinti di classe $k$?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2734%27%20y%3D%2736%27%20width%3D%2772%27%20height%3D%2772%27%20rx%3D%2718%27%20fill%3D%27%237ad7b8%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Crect%20x%3D%2756%27%20y%3D%2722%27%20width%3D%2728%27%20height%3D%2718%27%20rx%3D%278%27%20fill%3D%27%236aa6ff%27%20opacity%3D%27.9%27/%3E%0A%3Ccircle%20cx%3D%2756%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2784%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Cpath%20d%3D%27M56%2092c8%208%2020%208%2028%200%27%20fill%3D%27none%27%20stroke%3D%27%231f2a37%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M70%20108v10%27%20stroke%3D%27%23ffb86a%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3C/svg%3E" alt="Sticker Robot" loading="lazy" />
+      <div class="a">Sono tutti i gruppi di $k$ elementi scelti fra gli $n$, che differiscono per almeno un elemento o per l'ordine con cui gli elementi sono collocati.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c004" data-index="4" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2734%27%20y%3D%2736%27%20width%3D%2772%27%20height%3D%2772%27%20rx%3D%2718%27%20fill%3D%27%237ad7b8%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Crect%20x%3D%2756%27%20y%3D%2722%27%20width%3D%2728%27%20height%3D%2718%27%20rx%3D%278%27%20fill%3D%27%236aa6ff%27%20opacity%3D%27.9%27/%3E%0A%3Ccircle%20cx%3D%2756%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2784%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Cpath%20d%3D%27M56%2092c8%208%2020%208%2028%200%27%20fill%3D%27none%27%20stroke%3D%27%231f2a37%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M70%20108v10%27%20stroke%3D%27%23ffb86a%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3C/svg%3E" alt="Sticker Robot" loading="lazy" />
+      <h2 class="q">Qual è la formula per calcolare il numero di disposizioni semplici $D_{n,k}$?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2734%27%20y%3D%2736%27%20width%3D%2772%27%20height%3D%2772%27%20rx%3D%2718%27%20fill%3D%27%237ad7b8%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Crect%20x%3D%2756%27%20y%3D%2722%27%20width%3D%2728%27%20height%3D%2718%27%20rx%3D%278%27%20fill%3D%27%236aa6ff%27%20opacity%3D%27.9%27/%3E%0A%3Ccircle%20cx%3D%2756%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2784%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Cpath%20d%3D%27M56%2092c8%208%2020%208%2028%200%27%20fill%3D%27none%27%20stroke%3D%27%231f2a37%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M70%20108v10%27%20stroke%3D%27%23ffb86a%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3C/svg%3E" alt="Sticker Robot" loading="lazy" />
+      <div class="a">$D_{n,k} = n \cdot (n-1) \cdot (n-2) \cdot ... \cdot (n-k+1)$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c005" data-index="5" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2734%27%20y%3D%2736%27%20width%3D%2772%27%20height%3D%2772%27%20rx%3D%2718%27%20fill%3D%27%237ad7b8%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Crect%20x%3D%2756%27%20y%3D%2722%27%20width%3D%2728%27%20height%3D%2718%27%20rx%3D%278%27%20fill%3D%27%236aa6ff%27%20opacity%3D%27.9%27/%3E%0A%3Ccircle%20cx%3D%2756%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2784%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Cpath%20d%3D%27M56%2092c8%208%2020%208%2028%200%27%20fill%3D%27none%27%20stroke%3D%27%231f2a37%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M70%20108v10%27%20stroke%3D%27%23ffb86a%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3C/svg%3E" alt="Sticker Robot" loading="lazy" />
+      <h2 class="q">Come si esprime la formula per le disposizioni semplici $D_{n,k}$ utilizzando i fattoriali?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2734%27%20y%3D%2736%27%20width%3D%2772%27%20height%3D%2772%27%20rx%3D%2718%27%20fill%3D%27%237ad7b8%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Crect%20x%3D%2756%27%20y%3D%2722%27%20width%3D%2728%27%20height%3D%2718%27%20rx%3D%278%27%20fill%3D%27%236aa6ff%27%20opacity%3D%27.9%27/%3E%0A%3Ccircle%20cx%3D%2756%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2784%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Cpath%20d%3D%27M56%2092c8%208%2020%208%2028%200%27%20fill%3D%27none%27%20stroke%3D%27%231f2a37%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M70%20108v10%27%20stroke%3D%27%23ffb86a%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3C/svg%3E" alt="Sticker Robot" loading="lazy" />
+      <div class="a">$D_{n,k} = \frac{n!}{(n-k)!}$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c006" data-index="6" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cdefs%3E%0A%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%0A%3Cstop%20offset%3D%270%27%20stop-color%3D%27%236aa6ff%27%20stop-opacity%3D%27.9%27/%3E%0A%3Cstop%20offset%3D%271%27%20stop-color%3D%27%237ad7b8%27%20stop-opacity%3D%27.9%27/%3E%0A%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20x%3D%2722%27%20y%3D%2722%27%20rx%3D%2722%27%20ry%3D%2722%27%20width%3D%2796%27%20height%3D%2796%27%20fill%3D%27url%28%23g%29%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3C/svg%3E" alt="Sticker Dice" loading="lazy" />
+      <h2 class="q">In che cosa si distinguono le disposizioni con ripetizione rispetto a quelle semplici?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cdefs%3E%0A%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%0A%3Cstop%20offset%3D%270%27%20stop-color%3D%27%236aa6ff%27%20stop-opacity%3D%27.9%27/%3E%0A%3Cstop%20offset%3D%271%27%20stop-color%3D%27%237ad7b8%27%20stop-opacity%3D%27.9%27/%3E%0A%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20x%3D%2722%27%20y%3D%2722%27%20rx%3D%2722%27%20ry%3D%2722%27%20width%3D%2796%27%20height%3D%2796%27%20fill%3D%27url%28%23g%29%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3C/svg%3E" alt="Sticker Dice" loading="lazy" />
+      <div class="a">Nelle disposizioni con ripetizione, gli elementi possono essere ripetuti all'interno di un gruppo.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c007" data-index="7" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <h2 class="q">Qual è la formula per calcolare il numero di disposizioni con ripetizione $D'_{n,k}$?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <div class="a">$D'_{n,k} = n^k$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c008" data-index="8" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <h2 class="q">Un byte è formato da una sequenza di 8 bit. Quante informazioni distinte può rappresentare e che tipo di calcolo si usa?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <div class="a">Può rappresentare $2^8 = 256$ informazioni; si usano le disposizioni con ripetizione $D'_{2,8}$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c009" data-index="9" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2718%27%20y%3D%2728%27%20width%3D%27104%27%20height%3D%2784%27%20rx%3D%2718%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Cpath%20d%3D%27M42%2060l14%2014-14%2014%27%20fill%3D%27none%27%20stroke%3D%27%237ad7b8%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M66%2088h30%27%20stroke%3D%27%236aa6ff%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2738%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%23ffb86a%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%237ad7b8%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%236aa6ff%27/%3E%0A%3C/svg%3E" alt="Sticker Terminal" loading="lazy" />
+      <h2 class="q">Cosa sono le permutazioni semplici di $n$ elementi distinti?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2718%27%20y%3D%2728%27%20width%3D%27104%27%20height%3D%2784%27%20rx%3D%2718%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Cpath%20d%3D%27M42%2060l14%2014-14%2014%27%20fill%3D%27none%27%20stroke%3D%27%237ad7b8%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M66%2088h30%27%20stroke%3D%27%236aa6ff%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2738%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%23ffb86a%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%237ad7b8%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%236aa6ff%27/%3E%0A%3C/svg%3E" alt="Sticker Terminal" loading="lazy" />
+      <div class="a">Sono tutti i gruppi formati dagli $n$ elementi che differiscono tra loro solo per l'ordine.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c010" data-index="10" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <h2 class="q">Qual è la relazione tra le permutazioni semplici di $n$ elementi e le disposizioni semplici?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <div class="a">Le permutazioni semplici di $n$ elementi ($P_n$) sono le disposizioni semplici di $n$ elementi di classe $n$ ($D_{n,n}$).</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c011" data-index="11" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <h2 class="q">Qual è la formula per calcolare il numero di permutazioni semplici $P_n$?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <div class="a">$P_n = n!$ (n fattoriale).</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c012" data-index="12" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cdefs%3E%0A%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%0A%3Cstop%20offset%3D%270%27%20stop-color%3D%27%236aa6ff%27%20stop-opacity%3D%27.9%27/%3E%0A%3Cstop%20offset%3D%271%27%20stop-color%3D%27%237ad7b8%27%20stop-opacity%3D%27.9%27/%3E%0A%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20x%3D%2722%27%20y%3D%2722%27%20rx%3D%2722%27%20ry%3D%2722%27%20width%3D%2796%27%20height%3D%2796%27%20fill%3D%27url%28%23g%29%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3C/svg%3E" alt="Sticker Dice" loading="lazy" />
+      <h2 class="q">Come si definisce la funzione fattoriale $n!$ per $n \ge 2$?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cdefs%3E%0A%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%0A%3Cstop%20offset%3D%270%27%20stop-color%3D%27%236aa6ff%27%20stop-opacity%3D%27.9%27/%3E%0A%3Cstop%20offset%3D%271%27%20stop-color%3D%27%237ad7b8%27%20stop-opacity%3D%27.9%27/%3E%0A%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20x%3D%2722%27%20y%3D%2722%27%20rx%3D%2722%27%20ry%3D%2722%27%20width%3D%2796%27%20height%3D%2796%27%20fill%3D%27url%28%23g%29%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3C/svg%3E" alt="Sticker Dice" loading="lazy" />
+      <div class="a">È il prodotto dei primi $n$ numeri naturali escluso lo zero: $n! = n \cdot (n-1) \cdot (n-2) \cdot ... \cdot 2 \cdot 1$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c013" data-index="13" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <h2 class="q">Qual è il valore di $0!$ per definizione?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <div class="a">Per convenzione, $0! = 1$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c014" data-index="14" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cdefs%3E%0A%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%0A%3Cstop%20offset%3D%270%27%20stop-color%3D%27%236aa6ff%27%20stop-opacity%3D%27.9%27/%3E%0A%3Cstop%20offset%3D%271%27%20stop-color%3D%27%237ad7b8%27%20stop-opacity%3D%27.9%27/%3E%0A%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20x%3D%2722%27%20y%3D%2722%27%20rx%3D%2722%27%20ry%3D%2722%27%20width%3D%2796%27%20height%3D%2796%27%20fill%3D%27url%28%23g%29%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3C/svg%3E" alt="Sticker Dice" loading="lazy" />
+      <h2 class="q">Qual è il valore di $1!$ per definizione?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cdefs%3E%0A%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%0A%3Cstop%20offset%3D%270%27%20stop-color%3D%27%236aa6ff%27%20stop-opacity%3D%27.9%27/%3E%0A%3Cstop%20offset%3D%271%27%20stop-color%3D%27%237ad7b8%27%20stop-opacity%3D%27.9%27/%3E%0A%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20x%3D%2722%27%20y%3D%2722%27%20rx%3D%2722%27%20ry%3D%2722%27%20width%3D%2796%27%20height%3D%2796%27%20fill%3D%27url%28%23g%29%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3C/svg%3E" alt="Sticker Dice" loading="lazy" />
+      <div class="a">Per convenzione, $1! = 1$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c015" data-index="15" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2734%27%20y%3D%2736%27%20width%3D%2772%27%20height%3D%2772%27%20rx%3D%2718%27%20fill%3D%27%237ad7b8%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Crect%20x%3D%2756%27%20y%3D%2722%27%20width%3D%2728%27%20height%3D%2718%27%20rx%3D%278%27%20fill%3D%27%236aa6ff%27%20opacity%3D%27.9%27/%3E%0A%3Ccircle%20cx%3D%2756%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2784%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Cpath%20d%3D%27M56%2092c8%208%2020%208%2028%200%27%20fill%3D%27none%27%20stroke%3D%27%231f2a37%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M70%20108v10%27%20stroke%3D%27%23ffb86a%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3C/svg%3E" alt="Sticker Robot" loading="lazy" />
+      <h2 class="q">Qual è la relazione ricorsiva che definisce la funzione fattoriale?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2734%27%20y%3D%2736%27%20width%3D%2772%27%20height%3D%2772%27%20rx%3D%2718%27%20fill%3D%27%237ad7b8%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Crect%20x%3D%2756%27%20y%3D%2722%27%20width%3D%2728%27%20height%3D%2718%27%20rx%3D%278%27%20fill%3D%27%236aa6ff%27%20opacity%3D%27.9%27/%3E%0A%3Ccircle%20cx%3D%2756%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2784%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Cpath%20d%3D%27M56%2092c8%208%2020%208%2028%200%27%20fill%3D%27none%27%20stroke%3D%27%231f2a37%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M70%20108v10%27%20stroke%3D%27%23ffb86a%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3C/svg%3E" alt="Sticker Robot" loading="lazy" />
+      <div class="a">$n! = n \cdot (n-1)!$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c016" data-index="16" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <h2 class="q">Cosa sono le permutazioni circolari di $n$ elementi?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <div class="a">Sono i modi di disporre $n$ elementi attorno a una circonferenza, dove le disposizioni ottenute per rotazione sono considerate identiche.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c017" data-index="17" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <h2 class="q">Qual è la formula per il numero di permutazioni circolari di $n$ elementi?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <div class="a">Il numero di permutazioni circolari è $(n-1)!$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c018" data-index="18" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <h2 class="q">Cosa sono le permutazioni con ripetizione di $n$ elementi?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <div class="a">Sono i gruppi formati dagli $n$ elementi, dove alcuni elementi sono indistinguibili, che differiscono per l'ordine degli elementi distinti e la posizione degli elementi ripetuti.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c019" data-index="19" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cdefs%3E%0A%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%0A%3Cstop%20offset%3D%270%27%20stop-color%3D%27%236aa6ff%27%20stop-opacity%3D%27.9%27/%3E%0A%3Cstop%20offset%3D%271%27%20stop-color%3D%27%237ad7b8%27%20stop-opacity%3D%27.9%27/%3E%0A%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20x%3D%2722%27%20y%3D%2722%27%20rx%3D%2722%27%20ry%3D%2722%27%20width%3D%2796%27%20height%3D%2796%27%20fill%3D%27url%28%23g%29%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3C/svg%3E" alt="Sticker Dice" loading="lazy" />
+      <h2 class="q">Qual è la formula per le permutazioni di $n$ elementi, di cui $h, k, ...$ sono ripetuti?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cdefs%3E%0A%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%0A%3Cstop%20offset%3D%270%27%20stop-color%3D%27%236aa6ff%27%20stop-opacity%3D%27.9%27/%3E%0A%3Cstop%20offset%3D%271%27%20stop-color%3D%27%237ad7b8%27%20stop-opacity%3D%27.9%27/%3E%0A%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20x%3D%2722%27%20y%3D%2722%27%20rx%3D%2722%27%20ry%3D%2722%27%20width%3D%2796%27%20height%3D%2796%27%20fill%3D%27url%28%23g%29%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3C/svg%3E" alt="Sticker Dice" loading="lazy" />
+      <div class="a">$P_n^{(h,k,...)} = \frac{n!}{h! \cdot k! \cdot ...}$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c020" data-index="20" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2734%27%20y%3D%2736%27%20width%3D%2772%27%20height%3D%2772%27%20rx%3D%2718%27%20fill%3D%27%237ad7b8%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Crect%20x%3D%2756%27%20y%3D%2722%27%20width%3D%2728%27%20height%3D%2718%27%20rx%3D%278%27%20fill%3D%27%236aa6ff%27%20opacity%3D%27.9%27/%3E%0A%3Ccircle%20cx%3D%2756%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2784%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Cpath%20d%3D%27M56%2092c8%208%2020%208%2028%200%27%20fill%3D%27none%27%20stroke%3D%27%231f2a37%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M70%20108v10%27%20stroke%3D%27%23ffb86a%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3C/svg%3E" alt="Sticker Robot" loading="lazy" />
+      <h2 class="q">Quanti anagrammi, anche senza significato, si possono formare con la parola TETTO?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2734%27%20y%3D%2736%27%20width%3D%2772%27%20height%3D%2772%27%20rx%3D%2718%27%20fill%3D%27%237ad7b8%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Crect%20x%3D%2756%27%20y%3D%2722%27%20width%3D%2728%27%20height%3D%2718%27%20rx%3D%278%27%20fill%3D%27%236aa6ff%27%20opacity%3D%27.9%27/%3E%0A%3Ccircle%20cx%3D%2756%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2784%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Cpath%20d%3D%27M56%2092c8%208%2020%208%2028%200%27%20fill%3D%27none%27%20stroke%3D%27%231f2a37%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M70%20108v10%27%20stroke%3D%27%23ffb86a%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3C/svg%3E" alt="Sticker Robot" loading="lazy" />
+      <div class="a">Sono permutazioni con ripetizione: $P_5^{(3)} = \frac{5!}{3!} = 20$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c021" data-index="21" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <h2 class="q">Cosa sono le combinazioni semplici di $n$ elementi distinti di classe $k$?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <div class="a">Sono tutti i gruppi di $k$ elementi scelti fra gli $n$, che differiscono per almeno un elemento, ma non per l'ordine.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c022" data-index="22" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2718%27%20y%3D%2728%27%20width%3D%27104%27%20height%3D%2784%27%20rx%3D%2718%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Cpath%20d%3D%27M42%2060l14%2014-14%2014%27%20fill%3D%27none%27%20stroke%3D%27%237ad7b8%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M66%2088h30%27%20stroke%3D%27%236aa6ff%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2738%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%23ffb86a%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%237ad7b8%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%236aa6ff%27/%3E%0A%3C/svg%3E" alt="Sticker Terminal" loading="lazy" />
+      <h2 class="q">Qual è la differenza fondamentale tra disposizioni semplici e combinazioni semplici?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2718%27%20y%3D%2728%27%20width%3D%27104%27%20height%3D%2784%27%20rx%3D%2718%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Cpath%20d%3D%27M42%2060l14%2014-14%2014%27%20fill%3D%27none%27%20stroke%3D%27%237ad7b8%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M66%2088h30%27%20stroke%3D%27%236aa6ff%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2738%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%23ffb86a%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%237ad7b8%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%236aa6ff%27/%3E%0A%3C/svg%3E" alt="Sticker Terminal" loading="lazy" />
+      <div class="a">Nelle disposizioni l'ordine degli elementi conta, mentre nelle combinazioni l'ordine non conta.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c023" data-index="23" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2718%27%20y%3D%2728%27%20width%3D%27104%27%20height%3D%2784%27%20rx%3D%2718%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Cpath%20d%3D%27M42%2060l14%2014-14%2014%27%20fill%3D%27none%27%20stroke%3D%27%237ad7b8%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M66%2088h30%27%20stroke%3D%27%236aa6ff%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2738%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%23ffb86a%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%237ad7b8%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%236aa6ff%27/%3E%0A%3C/svg%3E" alt="Sticker Terminal" loading="lazy" />
+      <h2 class="q">Qual è la formula per calcolare il numero di combinazioni semplici $C_{n,k}$?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2718%27%20y%3D%2728%27%20width%3D%27104%27%20height%3D%2784%27%20rx%3D%2718%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Cpath%20d%3D%27M42%2060l14%2014-14%2014%27%20fill%3D%27none%27%20stroke%3D%27%237ad7b8%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M66%2088h30%27%20stroke%3D%27%236aa6ff%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2738%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%23ffb86a%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%237ad7b8%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%236aa6ff%27/%3E%0A%3C/svg%3E" alt="Sticker Terminal" loading="lazy" />
+      <div class="a">$C_{n,k} = \frac{D_{n,k}}{P_k} = \frac{n!}{k!(n-k)!}$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c024" data-index="24" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cdefs%3E%0A%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%0A%3Cstop%20offset%3D%270%27%20stop-color%3D%27%236aa6ff%27%20stop-opacity%3D%27.9%27/%3E%0A%3Cstop%20offset%3D%271%27%20stop-color%3D%27%237ad7b8%27%20stop-opacity%3D%27.9%27/%3E%0A%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20x%3D%2722%27%20y%3D%2722%27%20rx%3D%2722%27%20ry%3D%2722%27%20width%3D%2796%27%20height%3D%2796%27%20fill%3D%27url%28%23g%29%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3C/svg%3E" alt="Sticker Dice" loading="lazy" />
+      <h2 class="q">Con quale altro simbolo si indica il numero delle combinazioni semplici $C_{n,k}$?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cdefs%3E%0A%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%0A%3Cstop%20offset%3D%270%27%20stop-color%3D%27%236aa6ff%27%20stop-opacity%3D%27.9%27/%3E%0A%3Cstop%20offset%3D%271%27%20stop-color%3D%27%237ad7b8%27%20stop-opacity%3D%27.9%27/%3E%0A%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20x%3D%2722%27%20y%3D%2722%27%20rx%3D%2722%27%20ry%3D%2722%27%20width%3D%2796%27%20height%3D%2796%27%20fill%3D%27url%28%23g%29%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3C/svg%3E" alt="Sticker Dice" loading="lazy" />
+      <div class="a">Con il coefficiente binomiale $\binom{n}{k}$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c025" data-index="25" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2718%27%20y%3D%2728%27%20width%3D%27104%27%20height%3D%2784%27%20rx%3D%2718%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Cpath%20d%3D%27M42%2060l14%2014-14%2014%27%20fill%3D%27none%27%20stroke%3D%27%237ad7b8%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M66%2088h30%27%20stroke%3D%27%236aa6ff%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2738%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%23ffb86a%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%237ad7b8%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%236aa6ff%27/%3E%0A%3C/svg%3E" alt="Sticker Terminal" loading="lazy" />
+      <h2 class="q">Cosa si intende per coefficiente binomiale $\binom{n}{k}$?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2718%27%20y%3D%2728%27%20width%3D%27104%27%20height%3D%2784%27%20rx%3D%2718%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Cpath%20d%3D%27M42%2060l14%2014-14%2014%27%20fill%3D%27none%27%20stroke%3D%27%237ad7b8%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M66%2088h30%27%20stroke%3D%27%236aa6ff%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2738%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%23ffb86a%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%237ad7b8%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%236aa6ff%27/%3E%0A%3C/svg%3E" alt="Sticker Terminal" loading="lazy" />
+      <div class="a">È il numero $\binom{n}{k} = \frac{n!}{k!(n-k)!}$, che corrisponde al numero di combinazioni semplici di $n$ elementi di classe $k$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c026" data-index="26" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <h2 class="q">Cosa enuncia la legge delle classi complementari per i coefficienti binomiali?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <div class="a">Afferma che scegliere $k$ elementi da un insieme di $n$ è equivalente a scegliere gli $n-k$ elementi da scartare.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c027" data-index="27" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cdefs%3E%0A%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%0A%3Cstop%20offset%3D%270%27%20stop-color%3D%27%236aa6ff%27%20stop-opacity%3D%27.9%27/%3E%0A%3Cstop%20offset%3D%271%27%20stop-color%3D%27%237ad7b8%27%20stop-opacity%3D%27.9%27/%3E%0A%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20x%3D%2722%27%20y%3D%2722%27%20rx%3D%2722%27%20ry%3D%2722%27%20width%3D%2796%27%20height%3D%2796%27%20fill%3D%27url%28%23g%29%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3C/svg%3E" alt="Sticker Dice" loading="lazy" />
+      <h2 class="q">Qual è la formula della legge delle classi complementari?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cdefs%3E%0A%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%0A%3Cstop%20offset%3D%270%27%20stop-color%3D%27%236aa6ff%27%20stop-opacity%3D%27.9%27/%3E%0A%3Cstop%20offset%3D%271%27%20stop-color%3D%27%237ad7b8%27%20stop-opacity%3D%27.9%27/%3E%0A%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20x%3D%2722%27%20y%3D%2722%27%20rx%3D%2722%27%20ry%3D%2722%27%20width%3D%2796%27%20height%3D%2796%27%20fill%3D%27url%28%23g%29%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3C/svg%3E" alt="Sticker Dice" loading="lazy" />
+      <div class="a">$\binom{n}{k} = \binom{n}{n-k}$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c028" data-index="28" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <h2 class="q">Qual è il valore del coefficiente binomiale $\binom{n}{0}$?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <div class="a">$\binom{n}{0} = 1$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c029" data-index="29" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <h2 class="q">Qual è il valore del coefficiente binomiale $\binom{n}{n}$?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <div class="a">$\binom{n}{n} = 1$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c030" data-index="30" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2734%27%20y%3D%2736%27%20width%3D%2772%27%20height%3D%2772%27%20rx%3D%2718%27%20fill%3D%27%237ad7b8%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Crect%20x%3D%2756%27%20y%3D%2722%27%20width%3D%2728%27%20height%3D%2718%27%20rx%3D%278%27%20fill%3D%27%236aa6ff%27%20opacity%3D%27.9%27/%3E%0A%3Ccircle%20cx%3D%2756%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2784%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Cpath%20d%3D%27M56%2092c8%208%2020%208%2028%200%27%20fill%3D%27none%27%20stroke%3D%27%231f2a37%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M70%20108v10%27%20stroke%3D%27%23ffb86a%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3C/svg%3E" alt="Sticker Robot" loading="lazy" />
+      <h2 class="q">Qual è la formula di ricorrenza (o formula di Stifel) per i coefficienti binomiali?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2734%27%20y%3D%2736%27%20width%3D%2772%27%20height%3D%2772%27%20rx%3D%2718%27%20fill%3D%27%237ad7b8%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Crect%20x%3D%2756%27%20y%3D%2722%27%20width%3D%2728%27%20height%3D%2718%27%20rx%3D%278%27%20fill%3D%27%236aa6ff%27%20opacity%3D%27.9%27/%3E%0A%3Ccircle%20cx%3D%2756%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2784%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Cpath%20d%3D%27M56%2092c8%208%2020%208%2028%200%27%20fill%3D%27none%27%20stroke%3D%27%231f2a37%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M70%20108v10%27%20stroke%3D%27%23ffb86a%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3C/svg%3E" alt="Sticker Robot" loading="lazy" />
+      <div class="a">$\binom{n+1}{k+1} = \binom{n}{k} + \binom{n}{k+1}$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c031" data-index="31" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2734%27%20y%3D%2736%27%20width%3D%2772%27%20height%3D%2772%27%20rx%3D%2718%27%20fill%3D%27%237ad7b8%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Crect%20x%3D%2756%27%20y%3D%2722%27%20width%3D%2728%27%20height%3D%2718%27%20rx%3D%278%27%20fill%3D%27%236aa6ff%27%20opacity%3D%27.9%27/%3E%0A%3Ccircle%20cx%3D%2756%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2784%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Cpath%20d%3D%27M56%2092c8%208%2020%208%2028%200%27%20fill%3D%27none%27%20stroke%3D%27%231f2a37%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M70%20108v10%27%20stroke%3D%27%23ffb86a%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3C/svg%3E" alt="Sticker Robot" loading="lazy" />
+      <h2 class="q">Cosa sono le combinazioni con ripetizione di $n$ elementi di classe $k$?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2734%27%20y%3D%2736%27%20width%3D%2772%27%20height%3D%2772%27%20rx%3D%2718%27%20fill%3D%27%237ad7b8%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Crect%20x%3D%2756%27%20y%3D%2722%27%20width%3D%2728%27%20height%3D%2718%27%20rx%3D%278%27%20fill%3D%27%236aa6ff%27%20opacity%3D%27.9%27/%3E%0A%3Ccircle%20cx%3D%2756%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2784%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Cpath%20d%3D%27M56%2092c8%208%2020%208%2028%200%27%20fill%3D%27none%27%20stroke%3D%27%231f2a37%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M70%20108v10%27%20stroke%3D%27%23ffb86a%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3C/svg%3E" alt="Sticker Robot" loading="lazy" />
+      <div class="a">Sono gruppi di $k$ elementi scelti fra $n$, dove ogni elemento può essere ripetuto e l'ordine non conta.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c032" data-index="32" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2718%27%20y%3D%2728%27%20width%3D%27104%27%20height%3D%2784%27%20rx%3D%2718%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Cpath%20d%3D%27M42%2060l14%2014-14%2014%27%20fill%3D%27none%27%20stroke%3D%27%237ad7b8%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M66%2088h30%27%20stroke%3D%27%236aa6ff%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2738%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%23ffb86a%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%237ad7b8%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%236aa6ff%27/%3E%0A%3C/svg%3E" alt="Sticker Terminal" loading="lazy" />
+      <h2 class="q">Qual è la formula per calcolare il numero di combinazioni con ripetizione $C'_{n,k}$?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2718%27%20y%3D%2728%27%20width%3D%27104%27%20height%3D%2784%27%20rx%3D%2718%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Cpath%20d%3D%27M42%2060l14%2014-14%2014%27%20fill%3D%27none%27%20stroke%3D%27%237ad7b8%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M66%2088h30%27%20stroke%3D%27%236aa6ff%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2738%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%23ffb86a%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%237ad7b8%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%236aa6ff%27/%3E%0A%3C/svg%3E" alt="Sticker Terminal" loading="lazy" />
+      <div class="a">$C'_{n,k} = C_{n+k-1, k} = \binom{n+k-1}{k}$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c033" data-index="33" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2734%27%20y%3D%2736%27%20width%3D%2772%27%20height%3D%2772%27%20rx%3D%2718%27%20fill%3D%27%237ad7b8%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Crect%20x%3D%2756%27%20y%3D%2722%27%20width%3D%2728%27%20height%3D%2718%27%20rx%3D%278%27%20fill%3D%27%236aa6ff%27%20opacity%3D%27.9%27/%3E%0A%3Ccircle%20cx%3D%2756%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2784%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Cpath%20d%3D%27M56%2092c8%208%2020%208%2028%200%27%20fill%3D%27none%27%20stroke%3D%27%231f2a37%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M70%20108v10%27%20stroke%3D%27%23ffb86a%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3C/svg%3E" alt="Sticker Robot" loading="lazy" />
+      <h2 class="q">Il calcolo per determinare quanti triangoli si possono formare con 5 punti a tre a tre non allineati richiede l'uso di _____.</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2734%27%20y%3D%2736%27%20width%3D%2772%27%20height%3D%2772%27%20rx%3D%2718%27%20fill%3D%27%237ad7b8%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Crect%20x%3D%2756%27%20y%3D%2722%27%20width%3D%2728%27%20height%3D%2718%27%20rx%3D%278%27%20fill%3D%27%236aa6ff%27%20opacity%3D%27.9%27/%3E%0A%3Ccircle%20cx%3D%2756%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2784%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Cpath%20d%3D%27M56%2092c8%208%2020%208%2028%200%27%20fill%3D%27none%27%20stroke%3D%27%231f2a37%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M70%20108v10%27%20stroke%3D%27%23ffb86a%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3C/svg%3E" alt="Sticker Robot" loading="lazy" />
+      <div class="a">combinazioni semplici ($C_{5,3}$)</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c034" data-index="34" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2718%27%20y%3D%2728%27%20width%3D%27104%27%20height%3D%2784%27%20rx%3D%2718%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Cpath%20d%3D%27M42%2060l14%2014-14%2014%27%20fill%3D%27none%27%20stroke%3D%27%237ad7b8%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M66%2088h30%27%20stroke%3D%27%236aa6ff%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2738%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%23ffb86a%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%237ad7b8%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%236aa6ff%27/%3E%0A%3C/svg%3E" alt="Sticker Terminal" loading="lazy" />
+      <h2 class="q">Qual è la formula del binomio di Newton per lo sviluppo di $(A+B)^n$?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2718%27%20y%3D%2728%27%20width%3D%27104%27%20height%3D%2784%27%20rx%3D%2718%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Cpath%20d%3D%27M42%2060l14%2014-14%2014%27%20fill%3D%27none%27%20stroke%3D%27%237ad7b8%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M66%2088h30%27%20stroke%3D%27%236aa6ff%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2738%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%23ffb86a%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%237ad7b8%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%236aa6ff%27/%3E%0A%3C/svg%3E" alt="Sticker Terminal" loading="lazy" />
+      <div class="a">$(A+B)^n = \binom{n}{0}A^nB^0 + \binom{n}{1}A^{n-1}B^1 + ... + \binom{n}{n}A^0B^n$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c035" data-index="35" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2734%27%20y%3D%2736%27%20width%3D%2772%27%20height%3D%2772%27%20rx%3D%2718%27%20fill%3D%27%237ad7b8%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Crect%20x%3D%2756%27%20y%3D%2722%27%20width%3D%2728%27%20height%3D%2718%27%20rx%3D%278%27%20fill%3D%27%236aa6ff%27%20opacity%3D%27.9%27/%3E%0A%3Ccircle%20cx%3D%2756%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2784%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Cpath%20d%3D%27M56%2092c8%208%2020%208%2028%200%27%20fill%3D%27none%27%20stroke%3D%27%231f2a37%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M70%20108v10%27%20stroke%3D%27%23ffb86a%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3C/svg%3E" alt="Sticker Robot" loading="lazy" />
+      <h2 class="q">Qual è la formula del binomio di Newton scritta con il simbolo di sommatoria?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2734%27%20y%3D%2736%27%20width%3D%2772%27%20height%3D%2772%27%20rx%3D%2718%27%20fill%3D%27%237ad7b8%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Crect%20x%3D%2756%27%20y%3D%2722%27%20width%3D%2728%27%20height%3D%2718%27%20rx%3D%278%27%20fill%3D%27%236aa6ff%27%20opacity%3D%27.9%27/%3E%0A%3Ccircle%20cx%3D%2756%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2784%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Cpath%20d%3D%27M56%2092c8%208%2020%208%2028%200%27%20fill%3D%27none%27%20stroke%3D%27%231f2a37%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M70%20108v10%27%20stroke%3D%27%23ffb86a%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3C/svg%3E" alt="Sticker Robot" loading="lazy" />
+      <div class="a">$(A+B)^n = \sum_{k=0}^{n} \binom{n}{k} A^{n-k}B^k$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c036" data-index="36" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <h2 class="q">Nel triangolo di Tartaglia, ogni coefficiente interno è la _____ dei due coefficienti della riga precedente che si trovano sopra di esso.</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <div class="a">somma</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c037" data-index="37" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2734%27%20y%3D%2736%27%20width%3D%2772%27%20height%3D%2772%27%20rx%3D%2718%27%20fill%3D%27%237ad7b8%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Crect%20x%3D%2756%27%20y%3D%2722%27%20width%3D%2728%27%20height%3D%2718%27%20rx%3D%278%27%20fill%3D%27%236aa6ff%27%20opacity%3D%27.9%27/%3E%0A%3Ccircle%20cx%3D%2756%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2784%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Cpath%20d%3D%27M56%2092c8%208%2020%208%2028%200%27%20fill%3D%27none%27%20stroke%3D%27%231f2a37%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M70%20108v10%27%20stroke%3D%27%23ffb86a%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3C/svg%3E" alt="Sticker Robot" loading="lazy" />
+      <h2 class="q">A cosa corrisponde il numero nella posizione $k$ (partendo da 0) della riga $n$ del triangolo di Tartaglia?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2734%27%20y%3D%2736%27%20width%3D%2772%27%20height%3D%2772%27%20rx%3D%2718%27%20fill%3D%27%237ad7b8%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Crect%20x%3D%2756%27%20y%3D%2722%27%20width%3D%2728%27%20height%3D%2718%27%20rx%3D%278%27%20fill%3D%27%236aa6ff%27%20opacity%3D%27.9%27/%3E%0A%3Ccircle%20cx%3D%2756%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2784%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Cpath%20d%3D%27M56%2092c8%208%2020%208%2028%200%27%20fill%3D%27none%27%20stroke%3D%27%231f2a37%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M70%20108v10%27%20stroke%3D%27%23ffb86a%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3C/svg%3E" alt="Sticker Robot" loading="lazy" />
+      <div class="a">Al coefficiente binomiale $\binom{n}{k}$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c038" data-index="38" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2718%27%20y%3D%2728%27%20width%3D%27104%27%20height%3D%2784%27%20rx%3D%2718%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Cpath%20d%3D%27M42%2060l14%2014-14%2014%27%20fill%3D%27none%27%20stroke%3D%27%237ad7b8%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M66%2088h30%27%20stroke%3D%27%236aa6ff%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2738%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%23ffb86a%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%237ad7b8%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%236aa6ff%27/%3E%0A%3C/svg%3E" alt="Sticker Terminal" loading="lazy" />
+      <h2 class="q">Qual è la somma dei coefficienti sull'n-esima riga del triangolo di Tartaglia?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2718%27%20y%3D%2728%27%20width%3D%27104%27%20height%3D%2784%27%20rx%3D%2718%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Cpath%20d%3D%27M42%2060l14%2014-14%2014%27%20fill%3D%27none%27%20stroke%3D%27%237ad7b8%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M66%2088h30%27%20stroke%3D%27%236aa6ff%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2738%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%23ffb86a%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%237ad7b8%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%236aa6ff%27/%3E%0A%3C/svg%3E" alt="Sticker Terminal" loading="lazy" />
+      <div class="a">La somma è $2^n$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c039" data-index="39" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2734%27%20y%3D%2736%27%20width%3D%2772%27%20height%3D%2772%27%20rx%3D%2718%27%20fill%3D%27%237ad7b8%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Crect%20x%3D%2756%27%20y%3D%2722%27%20width%3D%2728%27%20height%3D%2718%27%20rx%3D%278%27%20fill%3D%27%236aa6ff%27%20opacity%3D%27.9%27/%3E%0A%3Ccircle%20cx%3D%2756%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2784%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Cpath%20d%3D%27M56%2092c8%208%2020%208%2028%200%27%20fill%3D%27none%27%20stroke%3D%27%231f2a37%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M70%20108v10%27%20stroke%3D%27%23ffb86a%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3C/svg%3E" alt="Sticker Robot" loading="lazy" />
+      <h2 class="q">Qual è il quarto termine nello sviluppo di $(A+B)^{10}$?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2734%27%20y%3D%2736%27%20width%3D%2772%27%20height%3D%2772%27%20rx%3D%2718%27%20fill%3D%27%237ad7b8%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Crect%20x%3D%2756%27%20y%3D%2722%27%20width%3D%2728%27%20height%3D%2718%27%20rx%3D%278%27%20fill%3D%27%236aa6ff%27%20opacity%3D%27.9%27/%3E%0A%3Ccircle%20cx%3D%2756%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2784%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Cpath%20d%3D%27M56%2092c8%208%2020%208%2028%200%27%20fill%3D%27none%27%20stroke%3D%27%231f2a37%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M70%20108v10%27%20stroke%3D%27%23ffb86a%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3C/svg%3E" alt="Sticker Robot" loading="lazy" />
+      <div class="a">Corrisponde a $k=3$, quindi è $\binom{10}{3}A^{10-3}B^3 = 120A^7B^3$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c040" data-index="40" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2734%27%20y%3D%2736%27%20width%3D%2772%27%20height%3D%2772%27%20rx%3D%2718%27%20fill%3D%27%237ad7b8%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Crect%20x%3D%2756%27%20y%3D%2722%27%20width%3D%2728%27%20height%3D%2718%27%20rx%3D%278%27%20fill%3D%27%236aa6ff%27%20opacity%3D%27.9%27/%3E%0A%3Ccircle%20cx%3D%2756%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2784%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Cpath%20d%3D%27M56%2092c8%208%2020%208%2028%200%27%20fill%3D%27none%27%20stroke%3D%27%231f2a37%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M70%20108v10%27%20stroke%3D%27%23ffb86a%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3C/svg%3E" alt="Sticker Robot" loading="lazy" />
+      <h2 class="q">Quale tipo di raggruppamento si utilizza per calcolare tutte le possibili classifiche di una gara?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2734%27%20y%3D%2736%27%20width%3D%2772%27%20height%3D%2772%27%20rx%3D%2718%27%20fill%3D%27%237ad7b8%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Crect%20x%3D%2756%27%20y%3D%2722%27%20width%3D%2728%27%20height%3D%2718%27%20rx%3D%278%27%20fill%3D%27%236aa6ff%27%20opacity%3D%27.9%27/%3E%0A%3Ccircle%20cx%3D%2756%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2784%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Cpath%20d%3D%27M56%2092c8%208%2020%208%2028%200%27%20fill%3D%27none%27%20stroke%3D%27%231f2a37%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M70%20108v10%27%20stroke%3D%27%23ffb86a%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3C/svg%3E" alt="Sticker Robot" loading="lazy" />
+      <div class="a">Le disposizioni semplici, perché l'ordine di arrivo è importante e i concorrenti sono distinti.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c041" data-index="41" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <h2 class="q">Quale tipo di raggruppamento si usa per calcolare le possibili sestine del Superenalotto (6 numeri da 90)?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <div class="a">Le combinazioni semplici, perché l'ordine di estrazione dei numeri non conta.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c042" data-index="42" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2718%27%20y%3D%2728%27%20width%3D%27104%27%20height%3D%2784%27%20rx%3D%2718%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Cpath%20d%3D%27M42%2060l14%2014-14%2014%27%20fill%3D%27none%27%20stroke%3D%27%237ad7b8%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M66%2088h30%27%20stroke%3D%27%236aa6ff%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2738%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%23ffb86a%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%237ad7b8%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%236aa6ff%27/%3E%0A%3C/svg%3E" alt="Sticker Terminal" loading="lazy" />
+      <h2 class="q">In quanti modi si possono sistemare 5 chiavi diverse su un portachiavi circolare?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2718%27%20y%3D%2728%27%20width%3D%27104%27%20height%3D%2784%27%20rx%3D%2718%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Cpath%20d%3D%27M42%2060l14%2014-14%2014%27%20fill%3D%27none%27%20stroke%3D%27%237ad7b8%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M66%2088h30%27%20stroke%3D%27%236aa6ff%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2738%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%23ffb86a%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%237ad7b8%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%236aa6ff%27/%3E%0A%3C/svg%3E" alt="Sticker Terminal" loading="lazy" />
+      <div class="a">Si usano le permutazioni circolari: $(5-1)! = 4! = 24$ modi.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c043" data-index="43" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cdefs%3E%0A%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%0A%3Cstop%20offset%3D%270%27%20stop-color%3D%27%236aa6ff%27%20stop-opacity%3D%27.9%27/%3E%0A%3Cstop%20offset%3D%271%27%20stop-color%3D%27%237ad7b8%27%20stop-opacity%3D%27.9%27/%3E%0A%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20x%3D%2722%27%20y%3D%2722%27%20rx%3D%2722%27%20ry%3D%2722%27%20width%3D%2796%27%20height%3D%2796%27%20fill%3D%27url%28%23g%29%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3C/svg%3E" alt="Sticker Dice" loading="lazy" />
+      <h2 class="q">Qual è la condizione sulla classe $k$ per le disposizioni semplici $D_{n,k}$?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cdefs%3E%0A%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%0A%3Cstop%20offset%3D%270%27%20stop-color%3D%27%236aa6ff%27%20stop-opacity%3D%27.9%27/%3E%0A%3Cstop%20offset%3D%271%27%20stop-color%3D%27%237ad7b8%27%20stop-opacity%3D%27.9%27/%3E%0A%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20x%3D%2722%27%20y%3D%2722%27%20rx%3D%2722%27%20ry%3D%2722%27%20width%3D%2796%27%20height%3D%2796%27%20fill%3D%27url%28%23g%29%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3C/svg%3E" alt="Sticker Dice" loading="lazy" />
+      <div class="a">La classe $k$ deve essere minore o uguale al numero di elementi $n$ ($0 &lt; k \le n$).</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c044" data-index="44" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cdefs%3E%0A%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%0A%3Cstop%20offset%3D%270%27%20stop-color%3D%27%236aa6ff%27%20stop-opacity%3D%27.9%27/%3E%0A%3Cstop%20offset%3D%271%27%20stop-color%3D%27%237ad7b8%27%20stop-opacity%3D%27.9%27/%3E%0A%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20x%3D%2722%27%20y%3D%2722%27%20rx%3D%2722%27%20ry%3D%2722%27%20width%3D%2796%27%20height%3D%2796%27%20fill%3D%27url%28%23g%29%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3C/svg%3E" alt="Sticker Dice" loading="lazy" />
+      <h2 class="q">Esiste una restrizione sul valore di $k$ rispetto a $n$ nelle disposizioni con ripetizione?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cdefs%3E%0A%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%0A%3Cstop%20offset%3D%270%27%20stop-color%3D%27%236aa6ff%27%20stop-opacity%3D%27.9%27/%3E%0A%3Cstop%20offset%3D%271%27%20stop-color%3D%27%237ad7b8%27%20stop-opacity%3D%27.9%27/%3E%0A%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20x%3D%2722%27%20y%3D%2722%27%20rx%3D%2722%27%20ry%3D%2722%27%20width%3D%2796%27%20height%3D%2796%27%20fill%3D%27url%28%23g%29%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3C/svg%3E" alt="Sticker Dice" loading="lazy" />
+      <div class="a">No, $k$ può essere un qualsiasi numero naturale non nullo, anche maggiore di $n$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c045" data-index="45" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2718%27%20y%3D%2728%27%20width%3D%27104%27%20height%3D%2784%27%20rx%3D%2718%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Cpath%20d%3D%27M42%2060l14%2014-14%2014%27%20fill%3D%27none%27%20stroke%3D%27%237ad7b8%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M66%2088h30%27%20stroke%3D%27%236aa6ff%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2738%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%23ffb86a%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%237ad7b8%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%236aa6ff%27/%3E%0A%3C/svg%3E" alt="Sticker Terminal" loading="lazy" />
+      <h2 class="q">Lanciando una moneta per 5 volte, in quanti modi possono uscire 2 teste e 3 croci? Che calcolo si usa?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2718%27%20y%3D%2728%27%20width%3D%27104%27%20height%3D%2784%27%20rx%3D%2718%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Cpath%20d%3D%27M42%2060l14%2014-14%2014%27%20fill%3D%27none%27%20stroke%3D%27%237ad7b8%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M66%2088h30%27%20stroke%3D%27%236aa6ff%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2738%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%23ffb86a%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%237ad7b8%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%236aa6ff%27/%3E%0A%3C/svg%3E" alt="Sticker Terminal" loading="lazy" />
+      <div class="a">Si usano le permutazioni con ripetizione: $P_5^{(2,3)} = \frac{5!}{2!3!} = 10$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c046" data-index="46" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2718%27%20y%3D%2728%27%20width%3D%27104%27%20height%3D%2784%27%20rx%3D%2718%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Cpath%20d%3D%27M42%2060l14%2014-14%2014%27%20fill%3D%27none%27%20stroke%3D%27%237ad7b8%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M66%2088h30%27%20stroke%3D%27%236aa6ff%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2738%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%23ffb86a%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%237ad7b8%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%236aa6ff%27/%3E%0A%3C/svg%3E" alt="Sticker Terminal" loading="lazy" />
+      <h2 class="q">Un'azienda ha 20 candidati per 3 uffici diversi (amministrazione, contabilità, commerciale). In quanti modi può essere fatta la scelta?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2718%27%20y%3D%2728%27%20width%3D%27104%27%20height%3D%2784%27%20rx%3D%2718%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Cpath%20d%3D%27M42%2060l14%2014-14%2014%27%20fill%3D%27none%27%20stroke%3D%27%237ad7b8%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M66%2088h30%27%20stroke%3D%27%236aa6ff%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2738%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%23ffb86a%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%237ad7b8%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%236aa6ff%27/%3E%0A%3C/svg%3E" alt="Sticker Terminal" loading="lazy" />
+      <div class="a">Si usano le disposizioni semplici perché l'ordine (l'associazione candidato-ufficio) conta: $D_{20,3} = 20 \cdot 19 \cdot 18 = 6840$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c047" data-index="47" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <h2 class="q">In quanti modi possiamo distribuire 6 oggetti uguali in 4 scatole diverse?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <div class="a">Si usano le combinazioni con ripetizione: $C'_{4,6} = \binom{4+6-1}{6} = \binom{9}{6} = 84$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c048" data-index="48" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2734%27%20y%3D%2736%27%20width%3D%2772%27%20height%3D%2772%27%20rx%3D%2718%27%20fill%3D%27%237ad7b8%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Crect%20x%3D%2756%27%20y%3D%2722%27%20width%3D%2728%27%20height%3D%2718%27%20rx%3D%278%27%20fill%3D%27%236aa6ff%27%20opacity%3D%27.9%27/%3E%0A%3Ccircle%20cx%3D%2756%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2784%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Cpath%20d%3D%27M56%2092c8%208%2020%208%2028%200%27%20fill%3D%27none%27%20stroke%3D%27%231f2a37%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M70%20108v10%27%20stroke%3D%27%23ffb86a%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3C/svg%3E" alt="Sticker Robot" loading="lazy" />
+      <h2 class="q">Quanti numeri di 4 cifre, tutte diverse tra loro, si possono formare con le dieci cifre decimali (da 0 a 9)?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2734%27%20y%3D%2736%27%20width%3D%2772%27%20height%3D%2772%27%20rx%3D%2718%27%20fill%3D%27%237ad7b8%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Crect%20x%3D%2756%27%20y%3D%2722%27%20width%3D%2728%27%20height%3D%2718%27%20rx%3D%278%27%20fill%3D%27%236aa6ff%27%20opacity%3D%27.9%27/%3E%0A%3Ccircle%20cx%3D%2756%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2784%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Cpath%20d%3D%27M56%2092c8%208%2020%208%2028%200%27%20fill%3D%27none%27%20stroke%3D%27%231f2a37%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M70%20108v10%27%20stroke%3D%27%23ffb86a%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3C/svg%3E" alt="Sticker Robot" loading="lazy" />
+      <div class="a">$9 \cdot 9 \cdot 8 \cdot 7 = 4536$ (9 scelte per la prima cifra, 9 per la seconda, 8 per la terza, 7 per la quarta).</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c049" data-index="49" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cdefs%3E%0A%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%0A%3Cstop%20offset%3D%270%27%20stop-color%3D%27%236aa6ff%27%20stop-opacity%3D%27.9%27/%3E%0A%3Cstop%20offset%3D%271%27%20stop-color%3D%27%237ad7b8%27%20stop-opacity%3D%27.9%27/%3E%0A%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20x%3D%2722%27%20y%3D%2722%27%20rx%3D%2722%27%20ry%3D%2722%27%20width%3D%2796%27%20height%3D%2796%27%20fill%3D%27url%28%23g%29%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3C/svg%3E" alt="Sticker Dice" loading="lazy" />
+      <h2 class="q">Come si calcola il numero di diagonali di un poligono di $n$ vertici?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cdefs%3E%0A%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%0A%3Cstop%20offset%3D%270%27%20stop-color%3D%27%236aa6ff%27%20stop-opacity%3D%27.9%27/%3E%0A%3Cstop%20offset%3D%271%27%20stop-color%3D%27%237ad7b8%27%20stop-opacity%3D%27.9%27/%3E%0A%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20x%3D%2722%27%20y%3D%2722%27%20rx%3D%2722%27%20ry%3D%2722%27%20width%3D%2796%27%20height%3D%2796%27%20fill%3D%27url%28%23g%29%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3C/svg%3E" alt="Sticker Dice" loading="lazy" />
+      <div class="a">Si calcolano le combinazioni dei vertici presi a 2 a 2 ($C_{n,2}$) e si sottrae il numero di lati ($n$).</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c050" data-index="50" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <h2 class="q">Quanti sono gli anagrammi della parola "CIOCCOLATA"?</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <div class="a">Sono permutazioni con ripetizione di 10 lettere (2 C, 2 O, 1 L, 3 A, 1 T): $\frac{10!}{2!2!3!} = 151200$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c051" data-index="51" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2734%27%20y%3D%2736%27%20width%3D%2772%27%20height%3D%2772%27%20rx%3D%2718%27%20fill%3D%27%237ad7b8%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Crect%20x%3D%2756%27%20y%3D%2722%27%20width%3D%2728%27%20height%3D%2718%27%20rx%3D%278%27%20fill%3D%27%236aa6ff%27%20opacity%3D%27.9%27/%3E%0A%3Ccircle%20cx%3D%2756%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2784%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Cpath%20d%3D%27M56%2092c8%208%2020%208%2028%200%27%20fill%3D%27none%27%20stroke%3D%27%231f2a37%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M70%20108v10%27%20stroke%3D%27%23ffb86a%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3C/svg%3E" alt="Sticker Robot" loading="lazy" />
+      <h2 class="q">Termine: Disposizioni semplici</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2734%27%20y%3D%2736%27%20width%3D%2772%27%20height%3D%2772%27%20rx%3D%2718%27%20fill%3D%27%237ad7b8%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Crect%20x%3D%2756%27%20y%3D%2722%27%20width%3D%2728%27%20height%3D%2718%27%20rx%3D%278%27%20fill%3D%27%236aa6ff%27%20opacity%3D%27.9%27/%3E%0A%3Ccircle%20cx%3D%2756%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2784%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Cpath%20d%3D%27M56%2092c8%208%2020%208%2028%200%27%20fill%3D%27none%27%20stroke%3D%27%231f2a37%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M70%20108v10%27%20stroke%3D%27%23ffb86a%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3C/svg%3E" alt="Sticker Robot" loading="lazy" />
+      <div class="a">Gruppi di $k$ elementi scelti da $n$, diversi per almeno un elemento o per l'ordine. Formula: $D_{n,k} = n(n-1)...(n-k+1)$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c052" data-index="52" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cdefs%3E%0A%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%0A%3Cstop%20offset%3D%270%27%20stop-color%3D%27%236aa6ff%27%20stop-opacity%3D%27.9%27/%3E%0A%3Cstop%20offset%3D%271%27%20stop-color%3D%27%237ad7b8%27%20stop-opacity%3D%27.9%27/%3E%0A%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20x%3D%2722%27%20y%3D%2722%27%20rx%3D%2722%27%20ry%3D%2722%27%20width%3D%2796%27%20height%3D%2796%27%20fill%3D%27url%28%23g%29%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3C/svg%3E" alt="Sticker Dice" loading="lazy" />
+      <h2 class="q">Termine: Permutazioni semplici</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cdefs%3E%0A%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%0A%3Cstop%20offset%3D%270%27%20stop-color%3D%27%236aa6ff%27%20stop-opacity%3D%27.9%27/%3E%0A%3Cstop%20offset%3D%271%27%20stop-color%3D%27%237ad7b8%27%20stop-opacity%3D%27.9%27/%3E%0A%3C/linearGradient%3E%0A%3C/defs%3E%0A%3Crect%20x%3D%2722%27%20y%3D%2722%27%20rx%3D%2722%27%20ry%3D%2722%27%20width%3D%2796%27%20height%3D%2796%27%20fill%3D%27url%28%23g%29%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2788%27%20cy%3D%2752%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2752%27%20cy%3D%2788%27%20r%3D%277%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3C/svg%3E" alt="Sticker Dice" loading="lazy" />
+      <div class="a">Gruppi formati da tutti gli $n$ elementi di un insieme, diversi solo per l'ordine. Formula: $P_n = n!$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c053" data-index="53" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2734%27%20y%3D%2736%27%20width%3D%2772%27%20height%3D%2772%27%20rx%3D%2718%27%20fill%3D%27%237ad7b8%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Crect%20x%3D%2756%27%20y%3D%2722%27%20width%3D%2728%27%20height%3D%2718%27%20rx%3D%278%27%20fill%3D%27%236aa6ff%27%20opacity%3D%27.9%27/%3E%0A%3Ccircle%20cx%3D%2756%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2784%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Cpath%20d%3D%27M56%2092c8%208%2020%208%2028%200%27%20fill%3D%27none%27%20stroke%3D%27%231f2a37%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M70%20108v10%27%20stroke%3D%27%23ffb86a%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3C/svg%3E" alt="Sticker Robot" loading="lazy" />
+      <h2 class="q">Termine: Combinazioni semplici</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2734%27%20y%3D%2736%27%20width%3D%2772%27%20height%3D%2772%27%20rx%3D%2718%27%20fill%3D%27%237ad7b8%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Crect%20x%3D%2756%27%20y%3D%2722%27%20width%3D%2728%27%20height%3D%2718%27%20rx%3D%278%27%20fill%3D%27%236aa6ff%27%20opacity%3D%27.9%27/%3E%0A%3Ccircle%20cx%3D%2756%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2784%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Cpath%20d%3D%27M56%2092c8%208%2020%208%2028%200%27%20fill%3D%27none%27%20stroke%3D%27%231f2a37%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M70%20108v10%27%20stroke%3D%27%23ffb86a%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3C/svg%3E" alt="Sticker Robot" loading="lazy" />
+      <div class="a">Gruppi di $k$ elementi scelti da $n$, diversi per almeno un elemento ma non per l'ordine. Formula: $C_{n,k} = \binom{n}{k}$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c054" data-index="54" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2734%27%20y%3D%2736%27%20width%3D%2772%27%20height%3D%2772%27%20rx%3D%2718%27%20fill%3D%27%237ad7b8%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Crect%20x%3D%2756%27%20y%3D%2722%27%20width%3D%2728%27%20height%3D%2718%27%20rx%3D%278%27%20fill%3D%27%236aa6ff%27%20opacity%3D%27.9%27/%3E%0A%3Ccircle%20cx%3D%2756%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2784%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Cpath%20d%3D%27M56%2092c8%208%2020%208%2028%200%27%20fill%3D%27none%27%20stroke%3D%27%231f2a37%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M70%20108v10%27%20stroke%3D%27%23ffb86a%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3C/svg%3E" alt="Sticker Robot" loading="lazy" />
+      <h2 class="q">Termine: Disposizioni con ripetizione</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2734%27%20y%3D%2736%27%20width%3D%2772%27%20height%3D%2772%27%20rx%3D%2718%27%20fill%3D%27%237ad7b8%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Crect%20x%3D%2756%27%20y%3D%2722%27%20width%3D%2728%27%20height%3D%2718%27%20rx%3D%278%27%20fill%3D%27%236aa6ff%27%20opacity%3D%27.9%27/%3E%0A%3Ccircle%20cx%3D%2756%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Ccircle%20cx%3D%2784%27%20cy%3D%2770%27%20r%3D%278%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.85%27/%3E%0A%3Cpath%20d%3D%27M56%2092c8%208%2020%208%2028%200%27%20fill%3D%27none%27%20stroke%3D%27%231f2a37%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M70%20108v10%27%20stroke%3D%27%23ffb86a%27%20stroke-width%3D%276%27%20stroke-linecap%3D%27round%27/%3E%0A%3C/svg%3E" alt="Sticker Robot" loading="lazy" />
+      <div class="a">Gruppi di $k$ elementi scelti da $n$, anche ripetuti, diversi per almeno un elemento o per l'ordine. Formula: $D'_{n,k} = n^k$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c055" data-index="55" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2718%27%20y%3D%2728%27%20width%3D%27104%27%20height%3D%2784%27%20rx%3D%2718%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Cpath%20d%3D%27M42%2060l14%2014-14%2014%27%20fill%3D%27none%27%20stroke%3D%27%237ad7b8%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M66%2088h30%27%20stroke%3D%27%236aa6ff%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2738%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%23ffb86a%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%237ad7b8%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%236aa6ff%27/%3E%0A%3C/svg%3E" alt="Sticker Terminal" loading="lazy" />
+      <h2 class="q">Termine: Permutazioni con ripetizione</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2718%27%20y%3D%2728%27%20width%3D%27104%27%20height%3D%2784%27%20rx%3D%2718%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Cpath%20d%3D%27M42%2060l14%2014-14%2014%27%20fill%3D%27none%27%20stroke%3D%27%237ad7b8%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M66%2088h30%27%20stroke%3D%27%236aa6ff%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2738%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%23ffb86a%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%237ad7b8%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%236aa6ff%27/%3E%0A%3C/svg%3E" alt="Sticker Terminal" loading="lazy" />
+      <div class="a">Gruppi formati da $n$ elementi, di cui alcuni ripetuti, diversi per l'ordine degli elementi distinti. Formula: $P_n^{(h,k,...)} = \frac{n!}{h!k!...}$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c056" data-index="56" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2718%27%20y%3D%2728%27%20width%3D%27104%27%20height%3D%2784%27%20rx%3D%2718%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Cpath%20d%3D%27M42%2060l14%2014-14%2014%27%20fill%3D%27none%27%20stroke%3D%27%237ad7b8%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M66%2088h30%27%20stroke%3D%27%236aa6ff%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2738%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%23ffb86a%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%237ad7b8%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%236aa6ff%27/%3E%0A%3C/svg%3E" alt="Sticker Terminal" loading="lazy" />
+      <h2 class="q">Termine: Combinazioni con ripetizione</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2718%27%20y%3D%2728%27%20width%3D%27104%27%20height%3D%2784%27%20rx%3D%2718%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Cpath%20d%3D%27M42%2060l14%2014-14%2014%27%20fill%3D%27none%27%20stroke%3D%27%237ad7b8%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M66%2088h30%27%20stroke%3D%27%236aa6ff%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2738%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%23ffb86a%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%237ad7b8%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%236aa6ff%27/%3E%0A%3C/svg%3E" alt="Sticker Terminal" loading="lazy" />
+      <div class="a">Gruppi di $k$ elementi scelti da $n$, anche ripetuti, dove l'ordine non conta. Formula: $C'_{n,k} = \binom{n+k-1}{k}$.</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c057" data-index="57" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <h2 class="q">Per calcolare quanti numeri di 3 cifre si possono formare con {4, 5, 6, 7, 8} senza ripetizioni, si usano le _____.</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <div class="a">disposizioni semplici ($D_{5,3}$)</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c058" data-index="58" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2718%27%20y%3D%2728%27%20width%3D%27104%27%20height%3D%2784%27%20rx%3D%2718%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Cpath%20d%3D%27M42%2060l14%2014-14%2014%27%20fill%3D%27none%27%20stroke%3D%27%237ad7b8%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M66%2088h30%27%20stroke%3D%27%236aa6ff%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2738%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%23ffb86a%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%237ad7b8%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%236aa6ff%27/%3E%0A%3C/svg%3E" alt="Sticker Terminal" loading="lazy" />
+      <h2 class="q">Per calcolare quante possibili terne ordinate si possono ottenere estraendo 3 palline da 10 con reinserimento, si usano le _____.</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Crect%20x%3D%2718%27%20y%3D%2728%27%20width%3D%27104%27%20height%3D%2784%27%20rx%3D%2718%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.92%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27/%3E%0A%3Cpath%20d%3D%27M42%2060l14%2014-14%2014%27%20fill%3D%27none%27%20stroke%3D%27%237ad7b8%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Cpath%20d%3D%27M66%2088h30%27%20stroke%3D%27%236aa6ff%27%20stroke-width%3D%278%27%20stroke-linecap%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2738%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%23ffb86a%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%237ad7b8%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2744%27%20r%3D%275%27%20fill%3D%27%236aa6ff%27/%3E%0A%3C/svg%3E" alt="Sticker Terminal" loading="lazy" />
+      <div class="a">disposizioni con ripetizione ($D'_{10,3}$)</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c059" data-index="59" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <h2 class="q">Per calcolare in quanti modi si possono scegliere 3 rappresentanti da una classe di 20 studenti, si usano le _____.</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <div class="a">combinazioni semplici ($C_{20,3}$)</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+<article class="card" data-card-id="c060" data-index="60" tabindex="0" aria-label="Flashcard. Premi invio per girare.">
+  <div class="card-inner">
+    <section class="card-face card-front">
+      <div class="badge">DOMANDA</div>
+      <img class="sticker floaty" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <h2 class="q">Lanciando 4 dadi uguali contemporaneamente, per calcolare quante combinazioni di facce si possono presentare, si usano le _____.</h2>
+      <div class="hint">Clicca per vedere la risposta</div>
+    </section>
+    <section class="card-face card-back">
+      <div class="badge alt">RISPOSTA</div>
+      <img class="sticker floaty alt" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27140%27%20height%3D%27140%27%20viewBox%3D%270%200%20140%20140%27%3E%0A%3Cpath%20d%3D%27M36%2040c0-10%208-18%2018-18h12c2%200%204%202%204%204v8c0%205%206%207%209%203%203-4%207-7%2012-7%209%200%2016%207%2016%2016%200%205-3%2010-7%2012-4%203-2%209%203%209h8c2%200%204%202%204%204v12c0%2010-8%2018-18%2018H54c-10%200-18-8-18-18V40z%27%0Afill%3D%27%23ffb86a%27%20opacity%3D%27.9%27%20stroke%3D%27%23e6eef7%27%20stroke-width%3D%276%27%20stroke-linejoin%3D%27round%27/%3E%0A%3Ccircle%20cx%3D%2754%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2770%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3Ccircle%20cx%3D%2786%27%20cy%3D%2778%27%20r%3D%276%27%20fill%3D%27%231f2a37%27%20opacity%3D%27.25%27/%3E%0A%3C/svg%3E" alt="Sticker Puzzle" loading="lazy" />
+      <div class="a">combinazioni con ripetizione ($C'_{6,4}$)</div>
+      <div class="hint">Clicca per tornare alla domanda</div>
+    </section>
+  </div>
+</article>
+    </section>
+
+    <div id="empty" class="empty">Nessuna flashcard trovata con questi termini. Prova a cercare un’altra parola.</div>
+  </main>
+
+  <footer>
+    Suggerimento: prova a rispondere a voce prima di girare la card. Se una formula non si renderizza, verifica che sia tra <code>$...$</code> o <code>$$...$$</code>.
+  </footer>
+
+  <script>
+    const grid = document.getElementById('grid');
+    const cards = Array.from(document.querySelectorAll('.card'));
+    const search = document.getElementById('search');
+    const empty = document.getElementById('empty');
+    const shuffleBtn = document.getElementById('shuffle');
+    const restoreBtn = document.getElementById('restore');
+
+    // salva ordine originale (per ripristino)
+    const originalOrder = [...cards].sort((a,b) => (+a.dataset.index) - (+b.dataset.index));
+
+    function flip(card) {
+      card.classList.toggle('is-flipped');
+      if (window.MathJax && window.MathJax.typesetPromise) {
+        MathJax.typesetPromise([card]).catch(() => {});
+      }
+    }
+
+    function unflipAll() {
+      cards.forEach(c => c.classList.remove('is-flipped'));
+    }
+
+    cards.forEach(card => {
+      card.addEventListener('click', () => flip(card));
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          flip(card);
+        }
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          card.classList.remove('is-flipped');
+        }
+      });
+    });
+
+    function filterCards(q) {
+      const query = q.trim().toLowerCase();
+      let shown = 0;
+      cards.forEach(card => {
+        const text = card.innerText.toLowerCase();
+        const ok = text.includes(query);
+        card.style.display = ok ? '' : 'none';
+        if (ok) shown++;
+      });
+      empty.style.display = (shown === 0) ? 'block' : 'none';
+      if (window.MathJax && window.MathJax.typesetPromise) {
+        MathJax.typesetPromise().catch(() => {});
+      }
+    }
+
+    search.addEventListener('input', (e) => filterCards(e.target.value));
+
+    shuffleBtn.addEventListener('click', () => {
+      unflipAll();
+      // mescola solo le card visibili (rispetta la ricerca)
+      const visible = cards.filter(c => c.style.display !== 'none');
+      const hidden = cards.filter(c => c.style.display === 'none');
+
+      const shuffled = visible
+        .map(c => ({c, r: Math.random()}))
+        .sort((a,b) => a.r - b.r)
+        .map(x => x.c);
+
+      // prima tutte le visibili (mescolate), poi le nascoste (rimangono in fondo)
+      [...shuffled, ...hidden].forEach(c => grid.appendChild(c));
+
+      restoreBtn.disabled = false;
+    });
+
+    restoreBtn.addEventListener('click', () => {
+      unflipAll();
+      // ripristina ordine originale per tutte le card (anche se filtrate)
+      originalOrder.forEach(c => grid.appendChild(c));
+      restoreBtn.disabled = true;
+
+      if (window.MathJax && window.MathJax.typesetPromise) {
+        MathJax.typesetPromise().catch(() => {});
+      }
+    });
+
+    window.addEventListener('load', () => {
+      if (window.MathJax && window.MathJax.typesetPromise) {
+        MathJax.typesetPromise().catch(() => {});
+      }
+    });
+  </script>
+</body>
+</html>
